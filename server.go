@@ -1,17 +1,39 @@
 package main
 
 import (
-    "fmt"
     "net/http"
+	"github.com/gin-gonic/gin"
 )
 
+type book struct {
+	isbn string `json:"isbn"`
+	title string `json:"title"`
+	author string `json:"author"`
+}
+
+var books = []book{
+	{isbn: "1", title: "Bible", author: "Pope"},
+}
+
+func getBooks(c *gin.Context) {
+	c.IndentedJSON(http.StatusOK, books)
+}
+
+func addBook(c *gin.Context) {
+	var newBook book
+
+	if err := c.BindJSON(&newBook); err != nil {
+		return
+	}
+
+	books = append(books, newBook)
+
+	c.IndentedJSON(http.StatusCreated, newBook)
+}
 func main() {
-    http.HandleFunc("/", func (w http.ResponseWriter, r *http.Request) {
-        fmt.Fprintf(w, "Welcome to my website!")
-    })
+    router := gin.Default()
+	router.GET("/books", getBooks)
+	router.POST("/books", addBook)
 
-    fs := http.FileServer(http.Dir("static/"))
-    http.Handle("/static/", http.StripPrefix("/static/", fs))
-
-    http.ListenAndServe(":80", nil)
+	router.Run("localhost:8080")
 }
