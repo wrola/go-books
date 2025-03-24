@@ -1,16 +1,40 @@
 package main
 
 import (
-	"books/application"
-	"books/ports"
-	"context"
+	"books/core"
+	"books/core/repositories"
+	httpControllers "books/ports/http-controlers"
+	"log"
 )
 
 func main() {
-	ctx := context.Background()
+	// Create repository
+	bookRepo := repositories.NewInMemoryBookRepository()
 
-	app := application.NewApplication(ctx)
+	// Create application core
+	appCore := core.NewCore(bookRepo)
 
-	httpServer := ports.NewHttpServer(app)
-	httpServer.Start()
+	// Start HTTP server
+	httpModule := httpControllers.NewModule(appCore)
+	if err := httpModule.Start(":8080"); err != nil {
+		log.Fatalf("Failed to start HTTP server: %v", err)
+	}
+
+	// In the future, you could start gRPC server here as well
+	// grpcServer := grpcModule.NewModule(appCore)
+	// if err := grpcServer.Start(":9090"); err != nil {
+	//     log.Fatalf("Failed to start gRPC server: %v", err)
+	// }
+}
+
+// startHTTPServer starts the HTTP server
+func startHTTPServer(appCore *core.Core) error {
+	server := httpControllers.NewServer(appCore)
+	return server.Start(":8080")
+}
+
+// startGRPCServer starts the gRPC server (to be implemented)
+func startGRPCServer(appCore *core.Core) error {
+	// Create and start gRPC server
+	return nil
 }

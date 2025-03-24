@@ -5,6 +5,7 @@ import (
 	"context"
 )
 
+
 type GetBookQuery struct {
 	ID string
 }
