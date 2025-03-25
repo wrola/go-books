@@ -26,15 +26,3 @@ func main() {
 	//     log.Fatalf("Failed to start gRPC server: %v", err)
 	// }
 }
-
-// startHTTPServer starts the HTTP server
-func startHTTPServer(appCore *core.Core) error {
-	server := httpControllers.NewServer(appCore)
-	return server.Start(":8080")
-}
-
-// startGRPCServer starts the gRPC server (to be implemented)
-func startGRPCServer(appCore *core.Core) error {
-	// Create and start gRPC server
-	return nil
-}
