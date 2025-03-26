@@ -3,8 +3,8 @@ package core
 import (
 	"context"
 
-	"books/core/commands"
-	"books/core/models"
+	"books/core/storage/commands"
+	"books/core/storage/models"
 )
 
 // Core represents the application core with all available commands and queries
