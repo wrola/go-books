@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"strings"
+	"time"
 
-	"books/core/models"
+	"books/core/storage/models"
+	"books/core/storage/repositories"
 )
 
 // AddBookCommand represents the command to add a new book
@@ -17,11 +19,11 @@ type AddBookCommand struct {
 
 // AddBookCommandHandler handles AddBookCommand
 type AddBookCommandHandler struct {
-	repo BookRepository
+	repo repositories.BookRepository
 }
 
 // NewAddBookCommandHandler creates a new AddBookCommandHandler
-func NewAddBookCommandHandler(repo BookRepository) *AddBookCommandHandler {
+func NewAddBookCommandHandler(repo repositories.BookRepository) *AddBookCommandHandler {
 	return &AddBookCommandHandler{repo: repo}
 }
 
@@ -45,7 +47,7 @@ func (h *AddBookCommandHandler) Handle(ctx context.Context, cmd interface{}) err
 		return errors.New("ISBN cannot be empty")
 	}
 
-	book, err := models.NewBook(command.Title, command.Author, command.ISBN)
+	book, err := models.NewBook(command.ISBN, command.Title, command.Author, time.Now())
 	if err != nil {
 		return err
 	}

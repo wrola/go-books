@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	"books/core/models"
+	"books/core/storage/models"
 )
 
 // MockBookRepository is a mock implementation of BookRepository for testing
@@ -28,6 +28,22 @@ func (r *MockBookRepository) Save(ctx context.Context, book *models.Book) error 
 	if r.saveError != nil {
 		return r.saveError
 	}
+
+	// Try to find and update existing book
+	for i, existingBook := range r.books {
+		if existingBook.ISBN == book.ISBN {
+			// Create a new book instance to avoid reference issues
+			r.books[i] = &models.Book{
+				ISBN:        book.ISBN,
+				Title:       book.Title,
+				Author:      book.Author,
+				PublishedAt: book.PublishedAt,
+			}
+			return nil
+		}
+	}
+
+	// If not found, append as new book
 	r.books = append(r.books, book)
 	return nil
 }
@@ -36,26 +52,32 @@ func (r *MockBookRepository) FindAll(ctx context.Context) ([]*models.Book, error
 	return r.books, nil
 }
 
-func (r *MockBookRepository) FindByID(ctx context.Context, id string) (*models.Book, error) {
+func (r *MockBookRepository) FindByISBN(ctx context.Context, isbn string) (*models.Book, error) {
 	if r.findByIDError != nil {
 		return nil, r.findByIDError
 	}
 
 	for _, book := range r.books {
-		if book.ID == id {
-			return book, nil
+		if book.ISBN == isbn {
+			// Return a copy to prevent external modifications
+			return &models.Book{
+				ISBN:        book.ISBN,
+				Title:       book.Title,
+				Author:      book.Author,
+				PublishedAt: book.PublishedAt,
+			}, nil
 		}
 	}
 	return nil, ErrBookNotFound
 }
 
-func (r *MockBookRepository) Delete(ctx context.Context, id string) error {
+func (r *MockBookRepository) Delete(ctx context.Context, isbn string) error {
 	if r.deleteError != nil {
 		return r.deleteError
 	}
 
 	for i, book := range r.books {
-		if book.ID == id {
+		if book.ISBN == isbn {
 			r.books = append(r.books[:i], r.books[i+1:]...)
 			return nil
 		}
@@ -175,9 +197,6 @@ func TestAddBookCommandHandler_Handle(t *testing.T) {
 					t.Errorf("Book ISBN = %v, want %v", book.ISBN, cmd.ISBN)
 				}
 
-				if book.ID == "" {
-					t.Errorf("Book ID is empty")
-				}
 			}
 		})
 	}

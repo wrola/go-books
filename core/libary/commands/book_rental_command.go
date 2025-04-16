@@ -9,6 +9,7 @@ import (
 )
 
 type BookRentalCommand struct {
+	ID     string
 	BookID string
 	UserID string
 }

@@ -2,7 +2,7 @@ package main
 
 import (
 	"books/core"
-	"books/core/repositories"
+	"books/core/storage/repositories"
 	httpControllers "books/ports/http-controlers"
 	"log"
 )

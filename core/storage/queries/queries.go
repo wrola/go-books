@@ -1,10 +1,9 @@
 package queries
 
 import (
-	"books/core/models"
+	"books/core/storage/models"
 	"context"
 )
-
 
 type GetBookQuery struct {
 	ID string

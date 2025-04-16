@@ -1,16 +1,16 @@
 package commands
 
 import (
+	"books/core/storage/models"
 	"context"
 	"errors"
 	"testing"
-
-	"books/core/models"
+	"time"
 )
 
 func TestUpdateBookCommandHandler_Handle(t *testing.T) {
 	// Create a test book
-	testBook, _ := models.NewBook("Original Title", "Original Author", "1234567890")
+	testBook, _ := models.NewBook("1234567890", "Original Title", "Original Author", time.Now())
 
 	// Test cases
 	tests := []struct {
@@ -27,15 +27,14 @@ func TestUpdateBookCommandHandler_Handle(t *testing.T) {
 				repo.books = append(repo.books, testBook)
 			},
 			command: UpdateBookCommand{
-				ID:     testBook.ID,
-				Title:  "New Title",
+				ISBN:  testBook.ISBN,
+				Title: "New Title",
 				Author: "New Author",
-				ISBN:   "0987654321",
 			},
 			wantErr: false,
 			validateResult: func(t *testing.T, repo *MockBookRepository) {
 				// Find the book
-				book, err := repo.FindByID(context.Background(), testBook.ID)
+				book, err := repo.FindByISBN(context.Background(), testBook.ISBN)
 				if err != nil {
 					t.Errorf("Couldn't find updated book: %v", err)
 					return
@@ -48,8 +47,8 @@ func TestUpdateBookCommandHandler_Handle(t *testing.T) {
 				if book.Author != "New Author" {
 					t.Errorf("Author not updated. Expected 'New Author', got '%s'", book.Author)
 				}
-				if book.ISBN != "0987654321" {
-					t.Errorf("ISBN not updated. Expected '0987654321', got '%s'", book.ISBN)
+				if book.ISBN != testBook.ISBN {
+					t.Errorf("ISBN changed unexpectedly. Expected '%s', got '%s'", testBook.ISBN, book.ISBN)
 				}
 			},
 		},
@@ -59,14 +58,12 @@ func TestUpdateBookCommandHandler_Handle(t *testing.T) {
 				repo.books = append(repo.books, testBook)
 			},
 			command: UpdateBookCommand{
-				ID:     testBook.ID,
-				Title:  "New Title Only",
-				Author: "",
-				ISBN:   "",
+				ISBN:  testBook.ISBN,
+				Title: "New Title Only",
 			},
 			wantErr: false,
 			validateResult: func(t *testing.T, repo *MockBookRepository) {
-				book, _ := repo.FindByID(context.Background(), testBook.ID)
+				book, _ := repo.FindByISBN(context.Background(), testBook.ISBN)
 				if book.Title != "New Title Only" {
 					t.Errorf("Title not updated. Expected 'New Title Only', got '%s'", book.Title)
 				}
@@ -84,10 +81,9 @@ func TestUpdateBookCommandHandler_Handle(t *testing.T) {
 				// Empty repository
 			},
 			command: UpdateBookCommand{
-				ID:     "non-existent-id",
-				Title:  "New Title",
+				ISBN:  "non-existent-isbn",
+				Title: "New Title",
 				Author: "New Author",
-				ISBN:   "New ISBN",
 			},
 			wantErr:     true,
 			expectedErr: ErrBookNotFound,
@@ -96,24 +92,20 @@ func TestUpdateBookCommandHandler_Handle(t *testing.T) {
 			name: "Empty ID",
 			setupRepo: func(repo *MockBookRepository) {},
 			command: UpdateBookCommand{
-				ID:     "",
-				Title:  "New Title",
+				ISBN:  "",
+				Title: "New Title",
 				Author: "New Author",
-				ISBN:   "New ISBN",
 			},
 			wantErr:     true,
-			expectedErr: errors.New("book ID cannot be empty"),
+			expectedErr: errors.New("book ISBN cannot be empty"),
 		},
 		{
 			name: "All empty fields - nothing to update",
 			setupRepo: func(repo *MockBookRepository) {
 				repo.books = append(repo.books, testBook)
 			},
-			command: UpdateBookCommand{
-				ID:     testBook.ID,
-				Title:  "",
-				Author: "",
-				ISBN:   "",
+				command: UpdateBookCommand{
+				ISBN: testBook.ISBN,
 			},
 			wantErr:     true,
 			expectedErr: errors.New("at least one field must be provided for update"),
@@ -131,10 +123,9 @@ func TestUpdateBookCommandHandler_Handle(t *testing.T) {
 				repo.findByIDError = errors.New("database lookup error")
 			},
 			command: UpdateBookCommand{
-				ID:     testBook.ID,
-				Title:  "New Title",
+				ISBN:  testBook.ISBN,
+				Title: "New Title",
 				Author: "New Author",
-				ISBN:   "New ISBN",
 			},
 			wantErr:     true,
 			expectedErr: errors.New("database lookup error"),
@@ -146,10 +137,9 @@ func TestUpdateBookCommandHandler_Handle(t *testing.T) {
 				repo.saveError = errors.New("database save error")
 			},
 			command: UpdateBookCommand{
-				ID:     testBook.ID,
-				Title:  "New Title",
+				ISBN:  testBook.ISBN,
+				Title: "New Title",
 				Author: "New Author",
-				ISBN:   "New ISBN",
 			},
 			wantErr:     true,
 			expectedErr: errors.New("database save error"),

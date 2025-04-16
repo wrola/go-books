@@ -4,13 +4,13 @@ import (
 	"context"
 	"errors"
 	"testing"
-
-	"books/core/models"
+	"time"
+	"books/core/storage/models"
 )
 
 func TestDeleteBookCommandHandler_Handle(t *testing.T) {
 	// Create a test book
-	testBook, _ := models.NewBook("Test Book", "Test Author", "1234567890")
+	testBook, _ := models.NewBook("Test Book", "Test Author", "1234567890", time.Now())
 
 	// Test cases
 	tests := []struct {
@@ -26,7 +26,7 @@ func TestDeleteBookCommandHandler_Handle(t *testing.T) {
 				repo.books = append(repo.books, testBook)
 			},
 			command: DeleteBookCommand{
-				ID: testBook.ID,
+				ISBN: testBook.ISBN,
 			},
 			wantErr: false,
 		},
@@ -36,7 +36,7 @@ func TestDeleteBookCommandHandler_Handle(t *testing.T) {
 				// Empty repository
 			},
 			command: DeleteBookCommand{
-				ID: "non-existent-id",
+				ISBN: "non-existent-isbn",
 			},
 			wantErr:     true,
 			expectedErr: ErrBookNotFound,
@@ -52,7 +52,7 @@ func TestDeleteBookCommandHandler_Handle(t *testing.T) {
 			name: "Empty ID",
 			setupRepo: func(repo *MockBookRepository) {},
 			command: DeleteBookCommand{
-				ID: "",
+				ISBN: "",
 			},
 			wantErr:     true,
 			expectedErr: errors.New("book ID cannot be empty"),
@@ -63,7 +63,7 @@ func TestDeleteBookCommandHandler_Handle(t *testing.T) {
 				repo.findByIDError = errors.New("database error")
 			},
 			command: DeleteBookCommand{
-				ID: testBook.ID,
+				ISBN: testBook.ISBN,
 			},
 			wantErr:     true,
 			expectedErr: errors.New("database error"),
@@ -75,7 +75,7 @@ func TestDeleteBookCommandHandler_Handle(t *testing.T) {
 				repo.deleteError = errors.New("delete error")
 			},
 			command: DeleteBookCommand{
-				ID: testBook.ID,
+				ISBN: testBook.ISBN,
 			},
 			wantErr:     true,
 			expectedErr: errors.New("delete error"),
@@ -110,8 +110,8 @@ func TestDeleteBookCommandHandler_Handle(t *testing.T) {
 			if !tt.wantErr {
 				cmd, _ := tt.command.(DeleteBookCommand)
 				for _, book := range mockRepo.books {
-					if book.ID == cmd.ID {
-						t.Errorf("Book with ID %s still exists in repository after delete", cmd.ID)
+					if book.ISBN == cmd.ISBN {
+						t.Errorf("Book with ISBN %s still exists in repository after delete", cmd.ISBN)
 					}
 				}
 			}

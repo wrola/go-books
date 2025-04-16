@@ -4,23 +4,25 @@ import (
 	"context"
 	"errors"
 	"strings"
+
+	"books/core/storage/models"
+	"books/core/storage/repositories"
 )
 
 // UpdateBookCommand represents the command to update an existing book
 type UpdateBookCommand struct {
-	ID     string
-	Title  string
+	ISBN  string // ISBN of the book to update
+	Title string
 	Author string
-	ISBN   string
 }
 
 // UpdateBookCommandHandler handles UpdateBookCommand
 type UpdateBookCommandHandler struct {
-	repo BookRepository
+	repo repositories.BookRepository
 }
 
 // NewUpdateBookCommandHandler creates a new UpdateBookCommandHandler
-func NewUpdateBookCommandHandler(repo BookRepository) *UpdateBookCommandHandler {
+func NewUpdateBookCommandHandler(repo repositories.BookRepository) *UpdateBookCommandHandler {
 	return &UpdateBookCommandHandler{repo: repo}
 }
 
@@ -31,35 +33,43 @@ func (h *UpdateBookCommandHandler) Handle(ctx context.Context, cmd interface{}) 
 		return ErrInvalidCommandType
 	}
 
-	// Validate book ID
-	if strings.TrimSpace(command.ID) == "" {
-		return errors.New("book ID cannot be empty")
+	// Validate OldISBN
+	if strings.TrimSpace(command.ISBN) == "" {
+		return errors.New("book ISBN cannot be empty")
 	}
 
 	// Check if at least one field is provided for update
-	if command.Title == "" && command.Author == "" && command.ISBN == "" {
+	if command.Title == "" && command.Author == "" {
 		return errors.New("at least one field must be provided for update")
 	}
 
 	// Get the book to update
-	bookToUpdate, err := h.repo.FindByID(ctx, command.ID)
+	bookToUpdate, err := h.repo.FindByISBN(ctx, command.ISBN)
 	if err != nil {
 		return err // This will be ErrBookNotFound if the book doesn't exist
 	}
 
-	// Update the book fields if provided
+	// Create a new book with updated fields
+	newBook := &models.Book{
+		ISBN:        bookToUpdate.ISBN,
+		Title:       bookToUpdate.Title,
+		Author:      bookToUpdate.Author,
+		PublishedAt: bookToUpdate.PublishedAt,
+	}
+
+	// Update only the provided fields
 	if command.Title != "" {
-		bookToUpdate.Title = command.Title
+		newBook.Title = command.Title
 	}
-
 	if command.Author != "" {
-		bookToUpdate.Author = command.Author
+		newBook.Author = command.Author
 	}
 
-	if command.ISBN != "" {
-		bookToUpdate.ISBN = command.ISBN
+	// Delete the old book if ISBN is being updated
+	if err := h.repo.Delete(ctx, command.ISBN); err != nil {
+		return err
 	}
 
 	// Save the updated book
-	return h.repo.Save(ctx, bookToUpdate)
+	return h.repo.Save(ctx, newBook)
 }

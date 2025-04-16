@@ -28,7 +28,6 @@ type AddBookRequest struct {
 type UpdateBookRequest struct {
 	Title  string `json:"title"`
 	Author string `json:"author"`
-	ISBN   string `json:"isbn"`
 }
 
 // AddBook handles the request to add a new book
@@ -49,10 +48,9 @@ func (c *BookController) AddBook(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, gin.H{
 		"message": "Book created successfully",
 		"book": gin.H{
-			"id":     book.ID,
+			"isbn":   book.ISBN,
 			"title":  book.Title,
 			"author": book.Author,
-			"isbn":   book.ISBN,
 		},
 	})
 }
@@ -74,7 +72,6 @@ func (c *BookController) GetBookByISBN(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"book": gin.H{
-			"id":     book.ID,
 			"title":  book.Title,
 			"author": book.Author,
 			"isbn":   book.ISBN,
@@ -84,14 +81,14 @@ func (c *BookController) GetBookByISBN(ctx *gin.Context) {
 
 // GetBook handles the request to get a book by ID
 func (c *BookController) GetBook(ctx *gin.Context) {
-	id := ctx.Param("id")
+	isbn := ctx.Param("isbn")
 
-	if id == "" {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "ID parameter is required"})
+	if isbn == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "ISBN parameter is required"})
 		return
 	}
 
-	book, err := c.core.GetBookByID(ctx, id)
+	book, err := c.core.GetBookByISBN(ctx, isbn)
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": "Book not found"})
 		return
@@ -99,7 +96,6 @@ func (c *BookController) GetBook(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"book": gin.H{
-			"id":     book.ID,
 			"title":  book.Title,
 			"author": book.Author,
 			"isbn":   book.ISBN,
@@ -118,7 +114,6 @@ func (c *BookController) GetAllBooks(ctx *gin.Context) {
 	var result []gin.H
 	for _, book := range books {
 		result = append(result, gin.H{
-			"id":     book.ID,
 			"title":  book.Title,
 			"author": book.Author,
 			"isbn":   book.ISBN,
@@ -132,10 +127,10 @@ func (c *BookController) GetAllBooks(ctx *gin.Context) {
 
 // UpdateBook handles the request to update a book
 func (c *BookController) UpdateBook(ctx *gin.Context) {
-	id := ctx.Param("id")
+	isbn := ctx.Param("isbn")
 
-	if id == "" {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "ID parameter is required"})
+	if isbn == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "ISBN parameter is required"})
 		return
 	}
 
@@ -146,7 +141,7 @@ func (c *BookController) UpdateBook(ctx *gin.Context) {
 		return
 	}
 
-	book, err := c.core.UpdateBook(ctx, id, request.Title, request.Author, request.ISBN)
+	book, err := c.core.UpdateBook(ctx, isbn, request.Title, request.Author)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -156,7 +151,6 @@ func (c *BookController) UpdateBook(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "Book updated successfully",
 		"book": gin.H{
-			"id":     book.ID,
 			"title":  book.Title,
 			"author": book.Author,
 			"isbn":   book.ISBN,
@@ -166,14 +160,14 @@ func (c *BookController) UpdateBook(ctx *gin.Context) {
 
 // DeleteBook handles the request to delete a book
 func (c *BookController) DeleteBook(ctx *gin.Context) {
-	id := ctx.Param("id")
+	isbn := ctx.Param("isbn")
 
-	if id == "" {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "ID parameter is required"})
+	if isbn == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "ISBN parameter is required"})
 		return
 	}
 
-	err := c.core.DeleteBook(ctx, id)
+	err := c.core.DeleteBook(ctx, isbn)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

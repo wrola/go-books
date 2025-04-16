@@ -5,7 +5,7 @@ import (
 	"errors"
 	"reflect"
 
-	"books/core/models"
+	"books/core/storage/models"
 )
 
 // BookRepository defines the interface for book storage
@@ -65,3 +65,4 @@ var (
 	ErrBookNotFound       = errors.New("book not found")
 )
 
+// BookRepository is the interface for the book repository
