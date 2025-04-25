@@ -3,13 +3,36 @@ package main
 import (
 	"books/core"
 	"books/core/storage/repositories"
+	"books/infrastructure"
 	httpControllers "books/ports/http-controlers"
 	"log"
+	"os"
 )
 
 func main() {
+	// Database configuration
+	dbConfig := infrastructure.NewConfig(
+		os.Getenv("DB_HOST"),
+		5432,
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASSWORD"),
+		os.Getenv("DB_NAME"),
+	)
+
+	// Connect to database
+	db, err := infrastructure.Connect(dbConfig)
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+	defer db.Close()
+
+	// Run database migrations
+	if err := infrastructure.RunMigrations(db); err != nil {
+		log.Fatalf("Failed to run migrations: %v", err)
+	}
+
 	// Create repository
-	bookRepo := repositories.NewInMemoryBookRepository()
+	bookRepo := repositories.NewBookStoragePostgresRepository(db)
 
 	// Create application core
 	appCore := core.NewCore(bookRepo)

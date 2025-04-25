@@ -62,6 +62,53 @@ go run main.go
 # The server will start at http://localhost:8080
 ```
 
+## Docker
+
+This application can be run using Docker and Docker Compose.
+
+### Prerequisites
+
+- Docker
+- Docker Compose
+
+### Running with Docker Compose
+
+1. Build and start the containers:
+
+```bash
+docker-compose up -d
+```
+
+2. The application will be available at http://localhost:8080
+
+3. To stop the containers:
+
+```bash
+docker-compose down
+```
+
+4. To view logs:
+
+```bash
+docker-compose logs -f
+```
+
+### Building the Docker Image Manually
+
+1. Build the image:
+
+```bash
+docker build -t books-service .
+```
+
+2. Run the container:
+
+```bash
+docker run -p 8080:8080 --name books-service books-service
+```
+
+Note: When running the container manually, you'll need to ensure the PostgreSQL database is accessible and the environment variables are set correctly.
+
 ## API Endpoints
 
 ### Books
