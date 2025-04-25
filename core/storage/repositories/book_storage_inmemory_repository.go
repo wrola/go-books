@@ -2,35 +2,27 @@ package repositories
 
 import (
 	"context"
-	"errors"
 	"sync"
 
 	"books/core/storage/models"
+	"books/core/storage/repositories/interfaces"
 )
 
-// BookRepository defines the repository interface for book storage operations
-type BookRepository interface {
-	Save(ctx context.Context, book *models.Book) error
-	FindAll(ctx context.Context) ([]*models.Book, error)
-	FindByISBN(ctx context.Context, isbn string) (*models.Book, error)
-	Delete(ctx context.Context, isbn string) error
-}
-
-// InMemoryBookRepository is a simple in-memory implementation of BookRepository
-type InMemoryBookRepository struct {
+// BookStorageInMemoryRepository is a simple in-memory implementation of BookRepository
+type BookStorageInMemoryRepository struct {
 	books []*models.Book
 	mutex sync.RWMutex
 }
 
-// NewInMemoryBookRepository creates a new in-memory book repository
-func NewInMemoryBookRepository() *InMemoryBookRepository {
-	return &InMemoryBookRepository{
+// NewBookStorageInMemoryRepository creates a new in-memory book repository
+func NewBookStorageInMemoryRepository() *BookStorageInMemoryRepository {
+	return &BookStorageInMemoryRepository{
 		books: make([]*models.Book, 0),
 	}
 }
 
 // Save adds a book to the repository
-func (r *InMemoryBookRepository) Save(ctx context.Context, book *models.Book) error {
+func (r *BookStorageInMemoryRepository) Save(ctx context.Context, book *models.Book) error {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
 
@@ -49,7 +41,7 @@ func (r *InMemoryBookRepository) Save(ctx context.Context, book *models.Book) er
 }
 
 // FindAll returns all books in the repository
-func (r *InMemoryBookRepository) FindAll(ctx context.Context) ([]*models.Book, error) {
+func (r *BookStorageInMemoryRepository) FindAll(ctx context.Context) ([]*models.Book, error) {
 	r.mutex.RLock()
 	defer r.mutex.RUnlock()
 
@@ -60,7 +52,7 @@ func (r *InMemoryBookRepository) FindAll(ctx context.Context) ([]*models.Book, e
 }
 
 // FindByISBN returns a book by its ISBN
-func (r *InMemoryBookRepository) FindByISBN(ctx context.Context, isbn string) (*models.Book, error) {
+func (r *BookStorageInMemoryRepository) FindByISBN(ctx context.Context, isbn string) (*models.Book, error) {
 	r.mutex.RLock()
 	defer r.mutex.RUnlock()
 
@@ -76,11 +68,11 @@ func (r *InMemoryBookRepository) FindByISBN(ctx context.Context, isbn string) (*
 		}
 	}
 
-	return nil, ErrBookNotFound
+	return nil, interfaces.ErrBookNotFound
 }
 
 // Delete removes a book from the repository
-func (r *InMemoryBookRepository) Delete(ctx context.Context, isbn string) error {
+func (r *BookStorageInMemoryRepository) Delete(ctx context.Context, isbn string) error {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
 
@@ -93,11 +85,8 @@ func (r *InMemoryBookRepository) Delete(ctx context.Context, isbn string) error 
 		}
 	}
 
-	return ErrBookNotFound
+	return interfaces.ErrBookNotFound
 }
 
-// ErrBookNotFound is returned when a book is not found in the repository
-var ErrBookNotFound = errors.New("book not found")
-
-// Ensure InMemoryBookRepository implements BookRepository interface
-var _ BookRepository = (*InMemoryBookRepository)(nil)
+// Ensure BookStorageInMemoryRepository implements BookRepository interface
+var _ interfaces.BookStoragePostgresRepository = (*BookStorageInMemoryRepository)(nil)

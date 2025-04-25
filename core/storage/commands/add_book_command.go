@@ -7,24 +7,26 @@ import (
 	"time"
 
 	"books/core/storage/models"
-	"books/core/storage/repositories"
+	"books/core/storage/repositories/interfaces"
 )
 
 // AddBookCommand represents the command to add a new book
 type AddBookCommand struct {
-	Title  string
+	ISBN  string
+	Title string
 	Author string
-	ISBN   string
 }
 
 // AddBookCommandHandler handles AddBookCommand
 type AddBookCommandHandler struct {
-	repo repositories.BookRepository
+	repo interfaces.BookStoragePostgresRepository
 }
 
 // NewAddBookCommandHandler creates a new AddBookCommandHandler
-func NewAddBookCommandHandler(repo repositories.BookRepository) *AddBookCommandHandler {
-	return &AddBookCommandHandler{repo: repo}
+func NewAddBookCommandHandler(repo interfaces.BookStoragePostgresRepository) *AddBookCommandHandler {
+	return &AddBookCommandHandler{
+		repo: repo,
+	}
 }
 
 // Handle processes the AddBookCommand

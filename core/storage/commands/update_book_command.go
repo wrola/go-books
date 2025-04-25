@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"books/core/storage/models"
-	"books/core/storage/repositories"
+	"books/core/storage/repositories/interfaces"
 )
 
 // UpdateBookCommand represents the command to update an existing book
@@ -18,12 +18,14 @@ type UpdateBookCommand struct {
 
 // UpdateBookCommandHandler handles UpdateBookCommand
 type UpdateBookCommandHandler struct {
-	repo repositories.BookRepository
+	repo interfaces.BookStoragePostgresRepository
 }
 
 // NewUpdateBookCommandHandler creates a new UpdateBookCommandHandler
-func NewUpdateBookCommandHandler(repo repositories.BookRepository) *UpdateBookCommandHandler {
-	return &UpdateBookCommandHandler{repo: repo}
+func NewUpdateBookCommandHandler(repo interfaces.BookStoragePostgresRepository) *UpdateBookCommandHandler {
+	return &UpdateBookCommandHandler{
+		repo: repo,
+	}
 }
 
 // Handle processes the UpdateBookCommand

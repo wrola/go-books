@@ -5,22 +5,24 @@ import (
 	"errors"
 	"strings"
 
-	"books/core/storage/repositories"
+	"books/core/storage/repositories/interfaces"
 )
 
 // DeleteBookCommand represents the command to delete a book
 type DeleteBookCommand struct {
-	ISBN string
+	ISBN string // ISBN of the book to delete
 }
 
 // DeleteBookCommandHandler handles DeleteBookCommand
 type DeleteBookCommandHandler struct {
-	repo repositories.BookRepository
+	repo interfaces.BookStoragePostgresRepository
 }
 
 // NewDeleteBookCommandHandler creates a new DeleteBookCommandHandler
-func NewDeleteBookCommandHandler(repo repositories.BookRepository) *DeleteBookCommandHandler {
-	return &DeleteBookCommandHandler{repo: repo}
+func NewDeleteBookCommandHandler(repo interfaces.BookStoragePostgresRepository) *DeleteBookCommandHandler {
+	return &DeleteBookCommandHandler{
+		repo: repo,
+	}
 }
 
 // Handle processes the DeleteBookCommand

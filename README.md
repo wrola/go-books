@@ -140,14 +140,22 @@ go test ./core/commands/...
 
 ```
 books/
-├── core/                 # Core business logic
-│   ├── commands/         # Command definitions and handlers
-│   ├── models/           # Domain models
-│   └── repositories/     # Repository implementations
-├── ports/                # Adapters for external interfaces
-│   └── http-controlers/  # HTTP controllers and server
-│       └── controllers/  # Individual HTTP controllers
-└── main.go               # Application entry point
+├── core/                      # Core business logic
+│   ├── commands/              # Command definitions and handlers
+│   ├── models/                # Domain models
+│   └── storage/               # Storage interfaces and implementations
+│       ├── models/            # Storage-specific models
+│       └── repositories/      # Repository implementations
+├── infrastructure/            # Infrastructure components
+│   ├── database.go            # Database connection and configuration
+│   └── migrations.go          # Database migrations
+├── ports/                     # Adapters for external interfaces
+│   └── http-controlers/       # HTTP controllers and server
+│       └── controllers/       # Individual HTTP controllers
+├── Dockerfile                 # Docker configuration for the application
+├── docker-compose.yml         # Docker Compose configuration
+├── .dockerignore              # Files to exclude from Docker builds
+└── main.go                    # Application entry point
 ```
 
 ## Design Decisions

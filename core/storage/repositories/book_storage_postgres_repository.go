@@ -5,11 +5,12 @@ import (
 	"database/sql"
 
 	"books/core/storage/models"
+	"books/core/storage/repositories/interfaces"
 
 	_ "github.com/lib/pq"
 )
 
-// BookStoragePostgresRepository implements BookRepository interface using PostgreSQL
+// BookStoragePostgresRepository implements BookStoragePostgresRepository interface using PostgreSQL
 type BookStoragePostgresRepository struct {
 	db *sql.DB
 }
@@ -79,7 +80,7 @@ func (r *BookStoragePostgresRepository) FindByISBN(ctx context.Context, isbn str
 	)
 
 	if err == sql.ErrNoRows {
-		return nil, ErrBookNotFound
+		return nil, interfaces.ErrBookNotFound
 	}
 	if err != nil {
 		return nil, err
@@ -103,11 +104,11 @@ func (r *BookStoragePostgresRepository) Delete(ctx context.Context, isbn string)
 	}
 
 	if rowsAffected == 0 {
-		return ErrBookNotFound
+		return interfaces.ErrBookNotFound
 	}
 
 	return nil
 }
 
-// Ensure BookStoragePostgresRepository implements BookRepository interface
-var _ BookRepository = (*BookStoragePostgresRepository)(nil)
+// Ensure BookStoragePostgresRepository implements BookStoragePostgresRepository interface
+var _ interfaces.BookStoragePostgresRepository = (*BookStoragePostgresRepository)(nil)

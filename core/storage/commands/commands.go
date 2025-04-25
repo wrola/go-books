@@ -4,17 +4,7 @@ import (
 	"context"
 	"errors"
 	"reflect"
-
-	"books/core/storage/models"
 )
-
-// BookRepository defines the interface for book storage
-type BookRepository interface {
-	Save(ctx context.Context, book *models.Book) error
-	FindAll(ctx context.Context) ([]*models.Book, error)
-	FindByID(ctx context.Context, id string) (*models.Book, error)
-	Delete(ctx context.Context, id string) error
-}
 
 // CommandHandler is the signature for all command handlers
 type CommandHandler interface {
@@ -62,7 +52,6 @@ func getCommandType(command interface{}) string {
 var (
 	ErrHandlerNotFound   = errors.New("handler not found for command")
 	ErrInvalidCommandType = errors.New("invalid command type")
-	ErrBookNotFound       = errors.New("book not found")
 )
 
 // BookRepository is the interface for the book repository
