@@ -2,6 +2,7 @@ package commands
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -21,7 +22,7 @@ func TestUpdateBookCommandHandler_Handle(t *testing.T) {
 	tests := []struct {
 		name           string
 		setupRepo      func(*repositories.BookStorageInMemoryRepository)
-		command        *UpdateBookCommand
+		command        interface{}
 		validateResult func(*testing.T, *repositories.BookStorageInMemoryRepository)
 		wantErr        bool
 		expectedErr    error
@@ -92,7 +93,7 @@ func TestUpdateBookCommandHandler_Handle(t *testing.T) {
 				Author: "New Author",
 			},
 			wantErr:   true,
-			expectedErr: ErrInvalidCommandType,
+			expectedErr: errors.New("book ISBN cannot be empty"),
 		},
 		{
 			name: "All empty fields - nothing to update",
@@ -102,21 +103,13 @@ func TestUpdateBookCommandHandler_Handle(t *testing.T) {
 			command: &UpdateBookCommand{
 				ISBN:  testBook.ISBN,
 			},
-			wantErr: false,
-			validateResult: func(t *testing.T, repo *repositories.BookStorageInMemoryRepository) {
-				book, _ := repo.FindByISBN(context.Background(), testBook.ISBN)
-				if book.Title != testBook.Title {
-					t.Errorf("expected title '%s', got '%s'", testBook.Title, book.Title)
-				}
-				if book.Author != testBook.Author {
-					t.Errorf("expected author '%s', got '%s'", testBook.Author, book.Author)
-				}
-			},
+			wantErr: true,
+			expectedErr: errors.New("at least one field must be provided for update"),
 		},
 		{
 			name:      "Invalid command type",
 			setupRepo: func(repo *repositories.BookStorageInMemoryRepository) {},
-			command:   &UpdateBookCommand{},
+			command:   nil,
 			wantErr:   true,
 			expectedErr: ErrInvalidCommandType,
 		},
@@ -136,7 +129,7 @@ func TestUpdateBookCommandHandler_Handle(t *testing.T) {
 				if err == nil {
 					t.Error("expected error but got none")
 				}
-				if err != tt.expectedErr {
+				if err.Error() != tt.expectedErr.Error() {
 					t.Errorf("expected error %v but got %v", tt.expectedErr, err)
 				}
 				return

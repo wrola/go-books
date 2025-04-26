@@ -27,7 +27,11 @@ func NewDeleteBookCommandHandler(repo interfaces.BookStoragePostgresRepository) 
 
 // Handle processes the DeleteBookCommand
 func (h *DeleteBookCommandHandler) Handle(ctx context.Context, cmd interface{}) error {
-	command, ok := cmd.(DeleteBookCommand)
+	if cmd == nil {
+		return ErrInvalidCommandType
+	}
+
+	command, ok := cmd.(*DeleteBookCommand)
 	if !ok {
 		return ErrInvalidCommandType
 	}

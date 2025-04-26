@@ -31,7 +31,11 @@ func NewAddBookCommandHandler(repo interfaces.BookStoragePostgresRepository) *Ad
 
 // Handle processes the AddBookCommand
 func (h *AddBookCommandHandler) Handle(ctx context.Context, cmd interface{}) error {
-	command, ok := cmd.(AddBookCommand)
+	if cmd == nil {
+		return ErrInvalidCommandType
+	}
+
+	command, ok := cmd.(*AddBookCommand)
 	if !ok {
 		return ErrInvalidCommandType
 	}

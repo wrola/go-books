@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"errors"
 	"sync"
 
 	"books/core/storage/models"
@@ -26,12 +27,10 @@ func (r *BookStorageInMemoryRepository) Save(ctx context.Context, book *models.B
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
 
-	// Check if book with this ISBN already exists (for update case)
-	for i, existingBook := range r.books {
+	// Check if book with this ISBN already exists
+	for _, existingBook := range r.books {
 		if existingBook.ISBN == book.ISBN {
-			// Replace the existing book
-			r.books[i] = book
-			return nil
+			return errors.New("book with ISBN " + book.ISBN + " already exists")
 		}
 	}
 

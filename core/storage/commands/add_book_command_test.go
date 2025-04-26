@@ -2,19 +2,19 @@ package commands
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
 	"books/core/storage/models"
 	"books/core/storage/repositories"
-	"books/core/storage/repositories/interfaces"
 )
 
 func TestAddBookCommandHandler_Handle(t *testing.T) {
 	tests := []struct {
 		name           string
 		setupRepo      func(*repositories.BookStorageInMemoryRepository)
-		command        *AddBookCommand
+		command        interface{}
 		validateResult func(*testing.T, *repositories.BookStorageInMemoryRepository)
 		wantErr        bool
 		expectedErr    error
@@ -53,7 +53,7 @@ func TestAddBookCommandHandler_Handle(t *testing.T) {
 				Author: "Test Author",
 			},
 			wantErr: true,
-			expectedErr: interfaces.ErrBookNotFound, // This should be a different error in a real implementation
+			expectedErr: errors.New("book with ISBN 1234567890 already exists"),
 		},
 		{
 			name:      "empty ISBN",
@@ -64,7 +64,7 @@ func TestAddBookCommandHandler_Handle(t *testing.T) {
 				Author: "Test Author",
 			},
 			wantErr:   true,
-			expectedErr: ErrInvalidCommandType,
+			expectedErr: errors.New("ISBN cannot be empty"),
 		},
 		{
 			name:      "empty title",
@@ -75,7 +75,7 @@ func TestAddBookCommandHandler_Handle(t *testing.T) {
 				Author: "Test Author",
 			},
 			wantErr:   true,
-			expectedErr: ErrInvalidCommandType,
+			expectedErr: errors.New("title cannot be empty"),
 		},
 		{
 			name:      "empty author",
@@ -86,12 +86,12 @@ func TestAddBookCommandHandler_Handle(t *testing.T) {
 				Author: "",
 			},
 			wantErr:   true,
-			expectedErr: ErrInvalidCommandType,
+			expectedErr: errors.New("author cannot be empty"),
 		},
 		{
 			name:      "invalid command type",
 			setupRepo: func(repo *repositories.BookStorageInMemoryRepository) {},
-			command:   &AddBookCommand{},
+			command:   &DeleteBookCommand{ISBN: "1234567890"},
 			wantErr:   true,
 			expectedErr: ErrInvalidCommandType,
 		},
@@ -111,7 +111,7 @@ func TestAddBookCommandHandler_Handle(t *testing.T) {
 				if err == nil {
 					t.Error("expected error but got none")
 				}
-				if err != tt.expectedErr {
+				if err.Error() != tt.expectedErr.Error() {
 					t.Errorf("expected error %v but got %v", tt.expectedErr, err)
 				}
 				return

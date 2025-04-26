@@ -30,7 +30,11 @@ func NewUpdateBookCommandHandler(repo interfaces.BookStoragePostgresRepository) 
 
 // Handle processes the UpdateBookCommand
 func (h *UpdateBookCommandHandler) Handle(ctx context.Context, cmd interface{}) error {
-	command, ok := cmd.(UpdateBookCommand)
+	if cmd == nil {
+		return ErrInvalidCommandType
+	}
+
+	command, ok := cmd.(*UpdateBookCommand)
 	if !ok {
 		return ErrInvalidCommandType
 	}
