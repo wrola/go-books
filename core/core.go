@@ -11,18 +11,18 @@ import (
 // Core represents the application core with all available commands and queries
 type Core struct {
 	commandBus  commands.CommandBus
-	repository  repositories.BookRepository // private field - not exported
+	repository  repositories.BookStoragePostgresRepository // private field - not exported
 }
 
 // NewCore creates a new instance of the application core
-func NewCore(bookRepository repositories.BookRepository) *Core {
+func NewCore(bookRepository repositories.BookStoragePostgresRepository) *Core {
 	// Create command bus
 	commandBus := commands.NewCommandBus()
 
 	// Register command handlers
-	addBookHandler := commands.NewAddBookCommandHandler(bookRepository)
-	updateBookHandler := commands.NewUpdateBookCommandHandler(bookRepository)
-	deleteBookHandler := commands.NewDeleteBookCommandHandler(bookRepository)
+	addBookHandler := commands.NewAddBookCommandHandler(&bookRepository)
+	updateBookHandler := commands.NewUpdateBookCommandHandler(&bookRepository)
+	deleteBookHandler := commands.NewDeleteBookCommandHandler(&bookRepository)
 
 	commandBus.RegisterHandler("commands.AddBookCommand", addBookHandler)
 	commandBus.RegisterHandler("commands.UpdateBookCommand", updateBookHandler)

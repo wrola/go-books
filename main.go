@@ -35,7 +35,7 @@ func main() {
 	bookRepo := repositories.NewBookStoragePostgresRepository(db)
 
 	// Create application core
-	appCore := core.NewCore(bookRepo)
+	appCore := core.NewCore(*bookRepo)
 
 	// Start HTTP server
 	httpModule := httpControllers.NewModule(appCore)

@@ -1,4 +1,4 @@
-FROM golang:1.21-alpine AS builder
+FROM golang:1.23.8-alpine AS builder
 
 # Install build dependencies
 RUN apk add --no-cache git
@@ -16,10 +16,10 @@ RUN go mod download
 COPY . .
 
 # Build the application
-RUN CGO_ENABLED=0 GOOS=linux go build -o /app/books-service
+RUN CGO_ENABLED=0 GOOS=linux go build -o main .
 
 # Create a minimal production image
-FROM alpine:3.18
+FROM alpine:latest
 
 # Install runtime dependencies
 RUN apk add --no-cache ca-certificates tzdata curl
@@ -28,7 +28,7 @@ RUN apk add --no-cache ca-certificates tzdata curl
 WORKDIR /app
 
 # Copy the binary from the builder stage
-COPY --from=builder /app/books-service .
+COPY --from=builder /app/main .
 
 # Set environment variables
 ENV DB_HOST=postgres \
@@ -44,4 +44,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:8080/health || exit 1
 
 # Run the application
-CMD ["./books-service"]
+CMD ["./main"]
