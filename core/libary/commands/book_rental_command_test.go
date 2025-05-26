@@ -76,15 +76,16 @@ func (m *mockBookRepository) SaveBookRental(ctx context.Context, rental *models.
 // Verify the mock implements the interface
 var _ repositories.BookRepository = (*mockBookRepository)(nil)
 
-// Test function
-func TestBookRentalCommandHandler_Handle(t *testing.T) {
-	tests := []struct {
-		name        string
-		setupRepo   func(repo *mockBookRepository)
-		command     BookRentalCommand
-		expectError bool
-		errorMsg    string
-	}{
+type bookRentalTestCase struct {
+	name        string
+	setupRepo   func(repo *mockBookRepository)
+	command     BookRentalCommand
+	expectError bool
+	errorMsg    string
+}
+
+func getBookRentalTestCases() []bookRentalTestCase {
+	return []bookRentalTestCase{
 		{
 			name: "Successfully borrow a book",
 			setupRepo: func(repo *mockBookRepository) {
@@ -169,6 +170,10 @@ func TestBookRentalCommandHandler_Handle(t *testing.T) {
 			errorMsg:    "database error",
 		},
 	}
+}
+
+func TestBookRentalCommandHandler_Handle(t *testing.T) {
+	tests := getBookRentalTestCases()
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {

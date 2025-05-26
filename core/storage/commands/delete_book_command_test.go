@@ -11,19 +11,20 @@ import (
 	"errors"
 )
 
-func TestDeleteBookCommandHandler_Handle(t *testing.T) {
+type deleteBookTestCase struct {
+	name           string
+	setupRepo      func(*repositories.BookStorageInMemoryRepository)
+	command        interface{}
+	validateResult func(*testing.T, *repositories.BookStorageInMemoryRepository)
+	wantErr        bool
+	expectedErr    error
+}
+
+func getDeleteBookTestCases() []deleteBookTestCase {
 	// Create a test book
 	testBook, _ := models.NewBook("1234567890", "Test Book", "Test Author", time.Now())
 
-	// Test cases
-	tests := []struct {
-		name           string
-		setupRepo      func(*repositories.BookStorageInMemoryRepository)
-		command        interface{}
-		validateResult func(*testing.T, *repositories.BookStorageInMemoryRepository)
-		wantErr        bool
-		expectedErr    error
-	}{
+	return []deleteBookTestCase{
 		{
 			name: "successful deletion",
 			setupRepo: func(repo *repositories.BookStorageInMemoryRepository) {
@@ -57,7 +58,7 @@ func TestDeleteBookCommandHandler_Handle(t *testing.T) {
 			command: &DeleteBookCommand{
 				ISBN: "",
 			},
-			wantErr:   true,
+			wantErr:     true,
 			expectedErr: errors.New("book ID cannot be empty"),
 		},
 		{
@@ -68,6 +69,10 @@ func TestDeleteBookCommandHandler_Handle(t *testing.T) {
 			expectedErr: ErrInvalidCommandType,
 		},
 	}
+}
+
+func TestDeleteBookCommandHandler_Handle(t *testing.T) {
+	tests := getDeleteBookTestCases()
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

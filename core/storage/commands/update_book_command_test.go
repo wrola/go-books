@@ -11,7 +11,16 @@ import (
 	"books/core/storage/repositories/interfaces"
 )
 
-func TestUpdateBookCommandHandler_Handle(t *testing.T) {
+type updateBookTestCase struct {
+	name           string
+	setupRepo      func(*repositories.BookStorageInMemoryRepository)
+	command        interface{}
+	validateResult func(*testing.T, *repositories.BookStorageInMemoryRepository)
+	wantErr        bool
+	expectedErr    error
+}
+
+func getUpdateBookTestCases() []updateBookTestCase {
 	testBook := &models.Book{
 		ISBN:        "123",
 		Title:       "Test Book",
@@ -19,22 +28,15 @@ func TestUpdateBookCommandHandler_Handle(t *testing.T) {
 		PublishedAt: time.Now(),
 	}
 
-	tests := []struct {
-		name           string
-		setupRepo      func(*repositories.BookStorageInMemoryRepository)
-		command        interface{}
-		validateResult func(*testing.T, *repositories.BookStorageInMemoryRepository)
-		wantErr        bool
-		expectedErr    error
-	}{
+	return []updateBookTestCase{
 		{
 			name: "Update all fields",
 			setupRepo: func(repo *repositories.BookStorageInMemoryRepository) {
 				repo.Save(context.Background(), testBook)
 			},
 			command: &UpdateBookCommand{
-				ISBN:  testBook.ISBN,
-				Title: "Updated Title",
+				ISBN:   testBook.ISBN,
+				Title:  "Updated Title",
 				Author: "Updated Author",
 			},
 			wantErr: false,
@@ -77,8 +79,8 @@ func TestUpdateBookCommandHandler_Handle(t *testing.T) {
 				// Empty repository
 			},
 			command: &UpdateBookCommand{
-				ISBN:  "123",
-				Title: "Updated Title",
+				ISBN:   "123",
+				Title:  "Updated Title",
 				Author: "Updated Author",
 			},
 			wantErr:     true,
@@ -88,11 +90,11 @@ func TestUpdateBookCommandHandler_Handle(t *testing.T) {
 			name: "Empty ID",
 			setupRepo: func(repo *repositories.BookStorageInMemoryRepository) {},
 			command: &UpdateBookCommand{
-				ISBN:  "",
-				Title: "New Title",
+				ISBN:   "",
+				Title:  "New Title",
 				Author: "New Author",
 			},
-			wantErr:   true,
+			wantErr:     true,
 			expectedErr: errors.New("book ISBN cannot be empty"),
 		},
 		{
@@ -101,9 +103,9 @@ func TestUpdateBookCommandHandler_Handle(t *testing.T) {
 				repo.Save(context.Background(), testBook)
 			},
 			command: &UpdateBookCommand{
-				ISBN:  testBook.ISBN,
+				ISBN: testBook.ISBN,
 			},
-			wantErr: true,
+			wantErr:     true,
 			expectedErr: errors.New("at least one field must be provided for update"),
 		},
 		{
@@ -114,6 +116,10 @@ func TestUpdateBookCommandHandler_Handle(t *testing.T) {
 			expectedErr: ErrInvalidCommandType,
 		},
 	}
+}
+
+func TestUpdateBookCommandHandler_Handle(t *testing.T) {
+	tests := getUpdateBookTestCases()
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

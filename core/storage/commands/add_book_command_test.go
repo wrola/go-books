@@ -10,21 +10,23 @@ import (
 	"books/core/storage/repositories"
 )
 
-func TestAddBookCommandHandler_Handle(t *testing.T) {
-	tests := []struct {
-		name           string
-		setupRepo      func(*repositories.BookStorageInMemoryRepository)
-		command        interface{}
-		validateResult func(*testing.T, *repositories.BookStorageInMemoryRepository)
-		wantErr        bool
-		expectedErr    error
-	}{
+type testCase struct {
+	name           string
+	setupRepo      func(*repositories.BookStorageInMemoryRepository)
+	command        interface{}
+	validateResult func(*testing.T, *repositories.BookStorageInMemoryRepository)
+	wantErr        bool
+	expectedErr    error
+}
+
+func getTestCases() []testCase {
+	return []testCase{
 		{
 			name:      "successful add",
 			setupRepo: func(repo *repositories.BookStorageInMemoryRepository) {},
 			command: &AddBookCommand{
-				ISBN:  "1234567890",
-				Title: "Test Book",
+				ISBN:   "1234567890",
+				Title:  "Test Book",
 				Author: "Test Author",
 			},
 			wantErr: false,
@@ -42,50 +44,50 @@ func TestAddBookCommandHandler_Handle(t *testing.T) {
 			},
 		},
 		{
-			name:      "duplicate ISBN",
+			name: "duplicate ISBN",
 			setupRepo: func(repo *repositories.BookStorageInMemoryRepository) {
 				book, _ := models.NewBook("1234567890", "Existing Book", "Existing Author", time.Now())
 				repo.Save(context.Background(), book)
 			},
 			command: &AddBookCommand{
-				ISBN:  "1234567890",
-				Title: "Test Book",
+				ISBN:   "1234567890",
+				Title:  "Test Book",
 				Author: "Test Author",
 			},
-			wantErr: true,
+			wantErr:     true,
 			expectedErr: errors.New("book with ISBN 1234567890 already exists"),
 		},
 		{
 			name:      "empty ISBN",
 			setupRepo: func(repo *repositories.BookStorageInMemoryRepository) {},
 			command: &AddBookCommand{
-				ISBN:  "",
-				Title: "Test Book",
+				ISBN:   "",
+				Title:  "Test Book",
 				Author: "Test Author",
 			},
-			wantErr:   true,
+			wantErr:     true,
 			expectedErr: errors.New("ISBN cannot be empty"),
 		},
 		{
 			name:      "empty title",
 			setupRepo: func(repo *repositories.BookStorageInMemoryRepository) {},
 			command: &AddBookCommand{
-				ISBN:  "1234567890",
-				Title: "",
+				ISBN:   "1234567890",
+				Title:  "",
 				Author: "Test Author",
 			},
-			wantErr:   true,
+			wantErr:     true,
 			expectedErr: errors.New("title cannot be empty"),
 		},
 		{
 			name:      "empty author",
 			setupRepo: func(repo *repositories.BookStorageInMemoryRepository) {},
 			command: &AddBookCommand{
-				ISBN:  "1234567890",
-				Title: "Test Book",
+				ISBN:   "1234567890",
+				Title:  "Test Book",
 				Author: "",
 			},
-			wantErr:   true,
+			wantErr:     true,
 			expectedErr: errors.New("author cannot be empty"),
 		},
 		{
@@ -96,6 +98,10 @@ func TestAddBookCommandHandler_Handle(t *testing.T) {
 			expectedErr: ErrInvalidCommandType,
 		},
 	}
+}
+
+func TestAddBookCommandHandler_Handle(t *testing.T) {
+	tests := getTestCases()
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
