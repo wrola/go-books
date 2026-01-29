@@ -30,11 +30,9 @@ WORKDIR /app
 # Copy the binary from the builder stage
 COPY --from=builder /app/main .
 
-# Set environment variables
-ENV DB_HOST=postgres \
-    DB_USER=postgres \
-    DB_PASSWORD=postgres \
-    DB_NAME=books
+# Environment variables must be provided at runtime
+# Required: DB_HOST, DB_USER, DB_PASSWORD, DB_NAME
+# Optional: DB_PORT (default: 5432), DB_SSL_MODE (default: require)
 
 # Expose the application port
 EXPOSE 8080

@@ -18,15 +18,18 @@ type Config struct {
 	SSLMode  string
 }
 
-// NewConfig creates a new database configuration
-func NewConfig(host string, port int, user, password, dbName string) *Config {
+// NewConfig creates a new database configuration with secure SSL default
+func NewConfig(host string, port int, user, password, dbName, sslMode string) *Config {
+	if sslMode == "" {
+		sslMode = "require" // Secure default
+	}
 	return &Config{
 		Host:     host,
 		Port:     port,
 		User:     user,
 		Password: password,
 		DBName:   dbName,
-		SSLMode:  "disable",
+		SSLMode:  sslMode,
 	}
 }
 

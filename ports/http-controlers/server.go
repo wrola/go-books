@@ -1,8 +1,11 @@
 package httpControllers
 
 import (
+	"database/sql"
+
 	"books/core"
 	"books/ports/http-controlers/controllers"
+	"books/ports/http-controlers/middleware"
 	"context"
 	"log"
 	"net/http"
@@ -23,14 +26,30 @@ type Server struct {
 
 // NewServer creates a new HTTP server
 func NewServer(core *core.Core) *Server {
+	return NewServerWithDB(core, nil)
+}
+
+// NewServerWithDB creates a new HTTP server with database health check support
+func NewServerWithDB(core *core.Core, db *sql.DB) *Server {
 	router := gin.Default()
 
+	// Apply middleware in order
+	router.Use(middleware.RequestIDMiddleware())
+	router.Use(middleware.CORSMiddleware())
+	router.Use(middleware.RateLimitMiddleware())
+	router.Use(middleware.SkipAuthPaths("/health"))
+
 	// Create controllers
-	controllers := controllers.NewControllers(core)
+	var ctlrs *controllers.Controllers
+	if db != nil {
+		ctlrs = controllers.NewControllersWithDB(core, db)
+	} else {
+		ctlrs = controllers.NewControllers(core)
+	}
 
 	return &Server{
 		router:      router,
-		controllers: controllers,
+		controllers: ctlrs,
 		core:        core,
 	}
 }

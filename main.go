@@ -17,6 +17,7 @@ func main() {
 		os.Getenv("DB_USER"),
 		os.Getenv("DB_PASSWORD"),
 		os.Getenv("DB_NAME"),
+		os.Getenv("DB_SSL_MODE"),
 	)
 
 	// Connect to database
@@ -35,10 +36,10 @@ func main() {
 	bookRepo := repositories.NewBookStoragePostgresRepository(db)
 
 	// Create application core
-	appCore := core.NewCore(*bookRepo)
+	appCore := core.NewCore(bookRepo)
 
-	// Start HTTP server
-	httpModule := httpControllers.NewModule(appCore)
+	// Start HTTP server with database health check
+	httpModule := httpControllers.NewModuleWithDB(appCore, db)
 	if err := httpModule.Start(":8080"); err != nil {
 		log.Fatalf("Failed to start HTTP server: %v", err)
 	}

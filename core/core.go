@@ -3,7 +3,7 @@ package core
 import (
 	"books/core/storage/commands"
 	"books/core/storage/models"
-	"books/core/storage/repositories"
+	"books/core/storage/repositories/interfaces"
 	"context"
 	"time"
 )
@@ -11,22 +11,22 @@ import (
 // Core represents the application core with all available commands and queries
 type Core struct {
 	commandBus  commands.CommandBus
-	repository  repositories.BookStoragePostgresRepository // private field - not exported
+	repository  interfaces.BookRepository // private field - not exported
 }
 
 // NewCore creates a new instance of the application core
-func NewCore(bookRepository repositories.BookStoragePostgresRepository) *Core {
+func NewCore(bookRepository interfaces.BookRepository) *Core {
 	// Create command bus
 	commandBus := commands.NewCommandBus()
 
 	// Register command handlers
-	addBookHandler := commands.NewAddBookCommandHandler(&bookRepository)
-	updateBookHandler := commands.NewUpdateBookCommandHandler(&bookRepository)
-	deleteBookHandler := commands.NewDeleteBookCommandHandler(&bookRepository)
+	addBookHandler := commands.NewAddBookCommandHandler(bookRepository)
+	updateBookHandler := commands.NewUpdateBookCommandHandler(bookRepository)
+	deleteBookHandler := commands.NewDeleteBookCommandHandler(bookRepository)
 
-	commandBus.RegisterHandler("commands.AddBookCommand", addBookHandler)
-	commandBus.RegisterHandler("commands.UpdateBookCommand", updateBookHandler)
-	commandBus.RegisterHandler("commands.DeleteBookCommand", deleteBookHandler)
+	commandBus.RegisterHandler("*commands.AddBookCommand", addBookHandler)
+	commandBus.RegisterHandler("*commands.UpdateBookCommand", updateBookHandler)
+	commandBus.RegisterHandler("*commands.DeleteBookCommand", deleteBookHandler)
 
 	// Return the configured core
 	return &Core{
@@ -39,7 +39,7 @@ func NewCore(bookRepository repositories.BookStoragePostgresRepository) *Core {
 
 // AddBook handles the add book command
 func (c *Core) AddBook(ctx context.Context, title, author, isbn string) (*models.Book, error) {
-	cmd := commands.AddBookCommand{
+	cmd := &commands.AddBookCommand{
 		Title:  title,
 		Author: author,
 		ISBN:   isbn,
@@ -53,13 +53,16 @@ func (c *Core) AddBook(ctx context.Context, title, author, isbn string) (*models
 	// Create a book response
 	// Note: In a real implementation, you might want to return the actual created book
 	// from the repository or use a query to fetch it
-	book, _ := models.NewBook(title, author, isbn, time.Now())
+	book, err := models.NewBook(isbn, title, author, time.Now())
+	if err != nil {
+		return nil, err
+	}
 	return book, nil
 }
 
 // UpdateBook handles updating a book
 func (c *Core) UpdateBook(ctx context.Context, isbn, title, author string) (*models.Book, error) {
-	cmd := commands.UpdateBookCommand{
+	cmd := &commands.UpdateBookCommand{
 		ISBN:  isbn,
 		Title: title,
 		Author: author,
@@ -76,7 +79,7 @@ func (c *Core) UpdateBook(ctx context.Context, isbn, title, author string) (*mod
 
 // DeleteBook handles deleting a book
 func (c *Core) DeleteBook(ctx context.Context, isbn string) error {
-	cmd := commands.DeleteBookCommand{
+	cmd := &commands.DeleteBookCommand{
 		ISBN: isbn,
 	}
 

@@ -21,8 +21,11 @@ type deleteBookTestCase struct {
 }
 
 func getDeleteBookTestCases() []deleteBookTestCase {
-	// Create a test book
-	testBook, _ := models.NewBook("1234567890", "Test Book", "Test Author", time.Now())
+	// Valid ISBN-13: 978-3-16-148410-0 (checksum valid)
+	validISBN := "9783161484100"
+
+	// Create a test book with valid ISBN
+	testBook, _ := models.NewBook(validISBN, "Test Book", "Test Author", time.Now())
 
 	return []deleteBookTestCase{
 		{
@@ -64,7 +67,7 @@ func getDeleteBookTestCases() []deleteBookTestCase {
 		{
 			name:      "invalid command type",
 			setupRepo: func(repo *repositories.BookStorageInMemoryRepository) {},
-			command:   &AddBookCommand{ISBN: "1234567890"}, // Pass a different command type
+			command:   &AddBookCommand{ISBN: validISBN}, // Pass a different command type
 			wantErr:   true,
 			expectedErr: ErrInvalidCommandType,
 		},

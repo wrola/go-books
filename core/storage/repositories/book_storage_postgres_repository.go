@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"books/core/storage/models"
 	"books/core/storage/repositories/interfaces"
@@ -37,7 +38,10 @@ func (r *BookStoragePostgresRepository) Save(ctx context.Context, book *models.B
 		book.Author,
 		book.PublishedAt,
 	)
-	return err
+	if err != nil {
+		return fmt.Errorf("failed to save book: %w", err)
+	}
+	return nil
 }
 
 // FindAll returns all books in the repository
@@ -46,7 +50,7 @@ func (r *BookStoragePostgresRepository) FindAll(ctx context.Context) ([]*models.
 
 	rows, err := r.db.QueryContext(ctx, query)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to query books: %w", err)
 	}
 	defer rows.Close()
 
@@ -55,13 +59,13 @@ func (r *BookStoragePostgresRepository) FindAll(ctx context.Context) ([]*models.
 		book := &models.Book{}
 		err := rows.Scan(&book.ISBN, &book.Title, &book.Author, &book.PublishedAt)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to scan book: %w", err)
 		}
 		books = append(books, book)
 	}
 
 	if err = rows.Err(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to iterate books: %w", err)
 	}
 
 	return books, nil
@@ -83,7 +87,7 @@ func (r *BookStoragePostgresRepository) FindByISBN(ctx context.Context, isbn str
 		return nil, interfaces.ErrBookNotFound
 	}
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to find book by ISBN: %w", err)
 	}
 
 	return book, nil
@@ -95,12 +99,12 @@ func (r *BookStoragePostgresRepository) Delete(ctx context.Context, isbn string)
 
 	result, err := r.db.ExecContext(ctx, query, isbn)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to delete book: %w", err)
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get affected rows: %w", err)
 	}
 
 	if rowsAffected == 0 {
@@ -110,5 +114,5 @@ func (r *BookStoragePostgresRepository) Delete(ctx context.Context, isbn string)
 	return nil
 }
 
-// Ensure BookStoragePostgresRepository implements BookStoragePostgresRepository interface
-var _ interfaces.BookStoragePostgresRepository = (*BookStoragePostgresRepository)(nil)
+// Ensure BookStoragePostgresRepository implements BookRepository interface
+var _ interfaces.BookRepository = (*BookStoragePostgresRepository)(nil)

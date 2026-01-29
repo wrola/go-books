@@ -2,7 +2,7 @@ package repositories
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"sync"
 
 	"books/core/storage/models"
@@ -30,7 +30,7 @@ func (r *BookStorageInMemoryRepository) Save(ctx context.Context, book *models.B
 	// Check if book with this ISBN already exists
 	for _, existingBook := range r.books {
 		if existingBook.ISBN == book.ISBN {
-			return errors.New("book with ISBN " + book.ISBN + " already exists")
+			return fmt.Errorf("failed to save book: book with ISBN %s already exists", book.ISBN)
 		}
 	}
 
@@ -88,4 +88,4 @@ func (r *BookStorageInMemoryRepository) Delete(ctx context.Context, isbn string)
 }
 
 // Ensure BookStorageInMemoryRepository implements BookRepository interface
-var _ interfaces.BookStoragePostgresRepository = (*BookStorageInMemoryRepository)(nil)
+var _ interfaces.BookRepository = (*BookStorageInMemoryRepository)(nil)

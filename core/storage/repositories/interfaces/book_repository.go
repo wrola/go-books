@@ -7,8 +7,8 @@ import (
 	"books/core/storage/models"
 )
 
-// BookStoragePostgresRepository defines the repository interface for book storage operations
-type BookStoragePostgresRepository interface {
+// BookRepository defines the repository interface for book storage operations
+type BookRepository interface {
 	Save(ctx context.Context, book *models.Book) error
 	FindAll(ctx context.Context) ([]*models.Book, error)
 	FindByISBN(ctx context.Context, isbn string) (*models.Book, error)

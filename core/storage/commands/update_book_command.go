@@ -18,11 +18,11 @@ type UpdateBookCommand struct {
 
 // UpdateBookCommandHandler handles UpdateBookCommand
 type UpdateBookCommandHandler struct {
-	repo interfaces.BookStoragePostgresRepository
+	repo interfaces.BookRepository
 }
 
 // NewUpdateBookCommandHandler creates a new UpdateBookCommandHandler
-func NewUpdateBookCommandHandler(repo interfaces.BookStoragePostgresRepository) *UpdateBookCommandHandler {
+func NewUpdateBookCommandHandler(repo interfaces.BookRepository) *UpdateBookCommandHandler {
 	return &UpdateBookCommandHandler{
 		repo: repo,
 	}

@@ -1,9 +1,11 @@
 package controllers
 
 import (
+	"errors"
 	"net/http"
 
 	"books/core"
+	"books/core/storage/repositories/interfaces"
 
 	"github.com/gin-gonic/gin"
 )
@@ -41,7 +43,8 @@ func (c *BookController) AddBook(ctx *gin.Context) {
 
 	book, err := c.core.AddBook(ctx, request.Title, request.Author, request.ISBN)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		status := mapErrorToStatus(err)
+		ctx.JSON(status, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -107,7 +110,8 @@ func (c *BookController) GetBook(ctx *gin.Context) {
 func (c *BookController) GetAllBooks(ctx *gin.Context) {
 	books, err := c.core.GetAllBooks(ctx)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		status := mapErrorToStatus(err)
+		ctx.JSON(status, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -144,7 +148,8 @@ func (c *BookController) UpdateBook(ctx *gin.Context) {
 	book, err := c.core.UpdateBook(ctx, isbn, request.Title, request.Author)
 
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		status := mapErrorToStatus(err)
+		ctx.JSON(status, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -170,10 +175,38 @@ func (c *BookController) DeleteBook(ctx *gin.Context) {
 	err := c.core.DeleteBook(ctx, isbn)
 
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		status := mapErrorToStatus(err)
+		ctx.JSON(status, gin.H{"error": err.Error()})
 		return
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"message": "Book deleted successfully"})
+}
+
+// mapErrorToStatus maps domain errors to HTTP status codes
+func mapErrorToStatus(err error) int {
+	if errors.Is(err, interfaces.ErrBookNotFound) {
+		return http.StatusNotFound
+	}
+	// Check for validation errors (contains common validation error messages)
+	errMsg := err.Error()
+	if contains(errMsg, "cannot be empty", "invalid", "required", "already exists", "ISBN must be", "checksum") {
+		return http.StatusBadRequest
+	}
+	return http.StatusInternalServerError
+}
+
+// contains checks if the string contains any of the substrings
+func contains(s string, substrs ...string) bool {
+	for _, substr := range substrs {
+		if len(s) >= len(substr) {
+			for i := 0; i <= len(s)-len(substr); i++ {
+				if s[i:i+len(substr)] == substr {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }
 

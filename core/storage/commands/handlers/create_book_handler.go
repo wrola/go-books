@@ -18,11 +18,11 @@ type CreateBookCommand struct {
 
 // CreateBookHandler handles the creation of new books
 type CreateBookHandler struct {
-	bookRepository interfaces.BookStoragePostgresRepository
+	bookRepository interfaces.BookRepository
 }
 
 // NewCreateBookHandler creates a new CreateBookHandler
-func NewCreateBookHandler(bookRepository interfaces.BookStoragePostgresRepository) *CreateBookHandler {
+func NewCreateBookHandler(bookRepository interfaces.BookRepository) *CreateBookHandler {
 	return &CreateBookHandler{
 		bookRepository: bookRepository,
 	}

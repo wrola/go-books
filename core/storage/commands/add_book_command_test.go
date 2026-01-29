@@ -20,18 +20,21 @@ type testCase struct {
 }
 
 func getTestCases() []testCase {
+	// Valid ISBN-13: 978-3-16-148410-0 (checksum valid)
+	validISBN := "9783161484100"
+
 	return []testCase{
 		{
 			name:      "successful add",
 			setupRepo: func(repo *repositories.BookStorageInMemoryRepository) {},
 			command: &AddBookCommand{
-				ISBN:   "1234567890",
+				ISBN:   validISBN,
 				Title:  "Test Book",
 				Author: "Test Author",
 			},
 			wantErr: false,
 			validateResult: func(t *testing.T, repo *repositories.BookStorageInMemoryRepository) {
-				book, err := repo.FindByISBN(context.Background(), "1234567890")
+				book, err := repo.FindByISBN(context.Background(), validISBN)
 				if err != nil {
 					t.Errorf("unexpected error: %v", err)
 				}
@@ -46,16 +49,16 @@ func getTestCases() []testCase {
 		{
 			name: "duplicate ISBN",
 			setupRepo: func(repo *repositories.BookStorageInMemoryRepository) {
-				book, _ := models.NewBook("1234567890", "Existing Book", "Existing Author", time.Now())
+				book, _ := models.NewBook(validISBN, "Existing Book", "Existing Author", time.Now())
 				repo.Save(context.Background(), book)
 			},
 			command: &AddBookCommand{
-				ISBN:   "1234567890",
+				ISBN:   validISBN,
 				Title:  "Test Book",
 				Author: "Test Author",
 			},
 			wantErr:     true,
-			expectedErr: errors.New("book with ISBN 1234567890 already exists"),
+			expectedErr: errors.New("failed to save book: book with ISBN " + validISBN + " already exists"),
 		},
 		{
 			name:      "empty ISBN",
@@ -72,7 +75,7 @@ func getTestCases() []testCase {
 			name:      "empty title",
 			setupRepo: func(repo *repositories.BookStorageInMemoryRepository) {},
 			command: &AddBookCommand{
-				ISBN:   "1234567890",
+				ISBN:   validISBN,
 				Title:  "",
 				Author: "Test Author",
 			},
@@ -83,7 +86,7 @@ func getTestCases() []testCase {
 			name:      "empty author",
 			setupRepo: func(repo *repositories.BookStorageInMemoryRepository) {},
 			command: &AddBookCommand{
-				ISBN:   "1234567890",
+				ISBN:   validISBN,
 				Title:  "Test Book",
 				Author: "",
 			},
@@ -93,9 +96,20 @@ func getTestCases() []testCase {
 		{
 			name:      "invalid command type",
 			setupRepo: func(repo *repositories.BookStorageInMemoryRepository) {},
-			command:   &DeleteBookCommand{ISBN: "1234567890"},
+			command:   &DeleteBookCommand{ISBN: validISBN},
 			wantErr:   true,
 			expectedErr: ErrInvalidCommandType,
+		},
+		{
+			name:      "invalid ISBN format",
+			setupRepo: func(repo *repositories.BookStorageInMemoryRepository) {},
+			command: &AddBookCommand{
+				ISBN:   "invalid-isbn",
+				Title:  "Test Book",
+				Author: "Test Author",
+			},
+			wantErr:     true,
+			expectedErr: errors.New("ISBN must be 10 or 13 characters (excluding hyphens)"),
 		},
 	}
 }

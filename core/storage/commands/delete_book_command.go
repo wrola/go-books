@@ -15,11 +15,11 @@ type DeleteBookCommand struct {
 
 // DeleteBookCommandHandler handles DeleteBookCommand
 type DeleteBookCommandHandler struct {
-	repo interfaces.BookStoragePostgresRepository
+	repo interfaces.BookRepository
 }
 
 // NewDeleteBookCommandHandler creates a new DeleteBookCommandHandler
-func NewDeleteBookCommandHandler(repo interfaces.BookStoragePostgresRepository) *DeleteBookCommandHandler {
+func NewDeleteBookCommandHandler(repo interfaces.BookRepository) *DeleteBookCommandHandler {
 	return &DeleteBookCommandHandler{
 		repo: repo,
 	}

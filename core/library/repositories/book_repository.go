@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"books/core/libary/models"
+	"books/core/library/models"
 	storage_models "books/core/storage/models"
 	"context"
 )

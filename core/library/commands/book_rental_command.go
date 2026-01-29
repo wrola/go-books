@@ -1,9 +1,9 @@
 package commands
 
 import (
-	"books/core/libary/errors"
-	"books/core/libary/models"
-	"books/core/libary/repositories"
+	"books/core/library/errors"
+	"books/core/library/models"
+	"books/core/library/repositories"
 	"context"
 	stderrors "errors"
 )
