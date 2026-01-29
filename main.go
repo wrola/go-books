@@ -10,7 +10,6 @@ import (
 )
 
 func main() {
-	// Database configuration
 	dbConfig := infrastructure.NewConfig(
 		os.Getenv("DB_HOST"),
 		5432,
@@ -20,33 +19,23 @@ func main() {
 		os.Getenv("DB_SSL_MODE"),
 	)
 
-	// Connect to database
 	db, err := infrastructure.Connect(dbConfig)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 	defer db.Close()
 
-	// Run database migrations
 	if err := infrastructure.RunMigrations(db); err != nil {
 		log.Fatalf("Failed to run migrations: %v", err)
 	}
 
-	// Create repository
 	bookRepo := repositories.NewBookStoragePostgresRepository(db)
 
-	// Create application core
 	appCore := core.NewCore(bookRepo)
 
-	// Start HTTP server with database health check
 	httpModule := httpControllers.NewModuleWithDB(appCore, db)
 	if err := httpModule.Start(":8080"); err != nil {
 		log.Fatalf("Failed to start HTTP server: %v", err)
 	}
 
-	// In the future, you could start gRPC server here as well
-	// grpcServer := grpcModule.NewModule(appCore)
-	// if err := grpcServer.Start(":9090"); err != nil {
-	//     log.Fatalf("Failed to start gRPC server: %v", err)
-	// }
 }
