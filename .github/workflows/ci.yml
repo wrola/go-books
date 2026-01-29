@@ -81,7 +81,7 @@ jobs:
           cache: true
 
       - name: Build binary
-        run: go build -o go-books ./...
+        run: go build -o go-books .
 
       - name: Upload binary artifact
         uses: actions/upload-artifact@v4
