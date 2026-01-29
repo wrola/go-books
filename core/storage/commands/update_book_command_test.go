@@ -76,7 +76,6 @@ func getUpdateBookTestCases() []updateBookTestCase {
 		{
 			name: "book not found",
 			setupRepo: func(repo *repositories.BookStorageInMemoryRepository) {
-				// Empty repository
 			},
 			command: &UpdateBookCommand{
 				ISBN:   "123",

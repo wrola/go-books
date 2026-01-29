@@ -11,19 +11,16 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// BookStoragePostgresRepository implements BookStoragePostgresRepository interface using PostgreSQL
 type BookStoragePostgresRepository struct {
 	db *sql.DB
 }
 
-// NewBookStoragePostgresRepository creates a new PostgreSQL book repository
 func NewBookStoragePostgresRepository(db *sql.DB) *BookStoragePostgresRepository {
 	return &BookStoragePostgresRepository{
 		db: db,
 	}
 }
 
-// Save adds or updates a book in the repository
 func (r *BookStoragePostgresRepository) Save(ctx context.Context, book *models.Book) error {
 	query := `
 		INSERT INTO books (isbn, title, author, published_at)
@@ -44,7 +41,6 @@ func (r *BookStoragePostgresRepository) Save(ctx context.Context, book *models.B
 	return nil
 }
 
-// FindAll returns all books in the repository
 func (r *BookStoragePostgresRepository) FindAll(ctx context.Context) ([]*models.Book, error) {
 	query := `SELECT isbn, title, author, published_at FROM books`
 
@@ -71,7 +67,6 @@ func (r *BookStoragePostgresRepository) FindAll(ctx context.Context) ([]*models.
 	return books, nil
 }
 
-// FindByISBN returns a book by its ISBN
 func (r *BookStoragePostgresRepository) FindByISBN(ctx context.Context, isbn string) (*models.Book, error) {
 	query := `SELECT isbn, title, author, published_at FROM books WHERE isbn = $1`
 
@@ -93,7 +88,6 @@ func (r *BookStoragePostgresRepository) FindByISBN(ctx context.Context, isbn str
 	return book, nil
 }
 
-// Delete removes a book from the repository
 func (r *BookStoragePostgresRepository) Delete(ctx context.Context, isbn string) error {
 	query := `DELETE FROM books WHERE isbn = $1`
 
@@ -114,5 +108,4 @@ func (r *BookStoragePostgresRepository) Delete(ctx context.Context, isbn string)
 	return nil
 }
 
-// Ensure BookStoragePostgresRepository implements BookRepository interface
 var _ interfaces.BookRepository = (*BookStoragePostgresRepository)(nil)

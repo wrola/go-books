@@ -6,7 +6,6 @@ import (
 	"time"
 )
 
-// Book represents a book in the library storage system
 type Book struct {
 	ISBN        string    `json:"isbn"`
 	Title       string    `json:"title"`
@@ -14,7 +13,6 @@ type Book struct {
 	PublishedAt time.Time `json:"published_at"`
 }
 
-// NewBook creates a new Book instance
 func NewBook(isbn, title, author string, publishedAt time.Time) (*Book, error) {
 	if err := validateBook(title, author, isbn); err != nil {
 		return nil, err
@@ -28,7 +26,6 @@ func NewBook(isbn, title, author string, publishedAt time.Time) (*Book, error) {
 	}, nil
 }
 
-// validateBook checks if the book data is valid
 func validateBook(title string, author string, isbn string) error {
 	if strings.TrimSpace(title) == "" {
 		return errors.New("title cannot be empty")
@@ -49,9 +46,7 @@ func validateBook(title string, author string, isbn string) error {
 	return nil
 }
 
-// validateISBN validates ISBN-10 or ISBN-13 format
 func validateISBN(isbn string) error {
-	// Remove hyphens and spaces
 	cleaned := strings.ReplaceAll(isbn, "-", "")
 	cleaned = strings.ReplaceAll(cleaned, " ", "")
 
@@ -65,7 +60,6 @@ func validateISBN(isbn string) error {
 	}
 }
 
-// validateISBN10 validates ISBN-10 checksum
 func validateISBN10(isbn string) error {
 	sum := 0
 	for i := 0; i < 9; i++ {
@@ -76,7 +70,6 @@ func validateISBN10(isbn string) error {
 		sum += digit * (10 - i)
 	}
 
-	// Last character can be 'X' representing 10
 	lastChar := isbn[9]
 	var lastDigit int
 	if lastChar == 'X' || lastChar == 'x' {
@@ -95,7 +88,6 @@ func validateISBN10(isbn string) error {
 	return nil
 }
 
-// validateISBN13 validates ISBN-13 checksum
 func validateISBN13(isbn string) error {
 	sum := 0
 	for i := 0; i < 13; i++ {

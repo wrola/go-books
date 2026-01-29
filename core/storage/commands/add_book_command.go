@@ -10,26 +10,21 @@ import (
 	"books/core/storage/repositories/interfaces"
 )
 
-// AddBookCommand represents the command to add a new book
 type AddBookCommand struct {
 	ISBN  string
 	Title string
 	Author string
 }
 
-// AddBookCommandHandler handles AddBookCommand
 type AddBookCommandHandler struct {
 	repo interfaces.BookRepository
 }
-
-// NewAddBookCommandHandler creates a new AddBookCommandHandler
 func NewAddBookCommandHandler(repo interfaces.BookRepository) *AddBookCommandHandler {
 	return &AddBookCommandHandler{
 		repo: repo,
 	}
 }
 
-// Handle processes the AddBookCommand
 func (h *AddBookCommandHandler) Handle(ctx context.Context, cmd interface{}) error {
 	if cmd == nil {
 		return ErrInvalidCommandType
@@ -40,7 +35,6 @@ func (h *AddBookCommandHandler) Handle(ctx context.Context, cmd interface{}) err
 		return ErrInvalidCommandType
 	}
 
-	// Validate inputs
 	if strings.TrimSpace(command.Title) == "" {
 		return errors.New("title cannot be empty")
 	}

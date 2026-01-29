@@ -7,7 +7,6 @@ import (
 	"books/core/storage/models"
 )
 
-// BookRepository defines the repository interface for book storage operations
 type BookRepository interface {
 	Save(ctx context.Context, book *models.Book) error
 	FindAll(ctx context.Context) ([]*models.Book, error)
@@ -15,5 +14,4 @@ type BookRepository interface {
 	Delete(ctx context.Context, isbn string) error
 }
 
-// ErrBookNotFound is returned when a book is not found in the repository
 var ErrBookNotFound = errors.New("book not found")

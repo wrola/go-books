@@ -8,7 +8,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// Config holds database configuration
 type Config struct {
 	Host     string
 	Port     int
@@ -18,10 +17,9 @@ type Config struct {
 	SSLMode  string
 }
 
-// NewConfig creates a new database configuration with secure SSL default
 func NewConfig(host string, port int, user, password, dbName, sslMode string) *Config {
 	if sslMode == "" {
-		sslMode = "require" // Secure default
+		sslMode = "require"
 	}
 	return &Config{
 		Host:     host,
@@ -33,7 +31,6 @@ func NewConfig(host string, port int, user, password, dbName, sslMode string) *C
 	}
 }
 
-// Connect establishes a connection to the database
 func Connect(cfg *Config) (*sql.DB, error) {
 	dsn := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
@@ -45,12 +42,9 @@ func Connect(cfg *Config) (*sql.DB, error) {
 		return nil, fmt.Errorf("error opening database: %w", err)
 	}
 
-	// Set connection pool settings
 	db.SetMaxOpenConns(25)
 	db.SetMaxIdleConns(25)
 	db.SetConnMaxLifetime(5 * time.Minute)
-
-	// Verify the connection
 	if err := db.Ping(); err != nil {
 		return nil, fmt.Errorf("error connecting to the database: %w", err)
 	}

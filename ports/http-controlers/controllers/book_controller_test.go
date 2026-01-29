@@ -17,11 +17,9 @@ func setupTestRouter() (*gin.Engine, *core.Core) {
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
 
-	// Create in-memory repository for testing
 	repo := repositories.NewBookStorageInMemoryRepository()
 	appCore := core.NewCore(repo)
 
-	// Create controllers
 	controllers := NewControllers(appCore)
 	controllers.RegisterRoutes(router)
 
@@ -40,7 +38,7 @@ func TestAddBook(t *testing.T) {
 		{
 			name: "successful add",
 			requestBody: map[string]interface{}{
-				"isbn":   "9783161484100", // Valid ISBN-13
+				"isbn":   "9783161484100",
 				"title":  "Test Book",
 				"author": "Test Author",
 			},
@@ -105,7 +103,6 @@ func TestAddBook(t *testing.T) {
 func TestGetAllBooks(t *testing.T) {
 	router, appCore := setupTestRouter()
 
-	// Add a book first
 	appCore.AddBook(nil, "Test Book", "Test Author", "9783161484100")
 
 	req, _ := http.NewRequest(http.MethodGet, "/books", nil)
@@ -135,7 +132,6 @@ func TestGetBookByISBN(t *testing.T) {
 
 	validISBN := "9783161484100"
 
-	// Add a book first
 	appCore.AddBook(nil, "Test Book", "Test Author", validISBN)
 
 	tests := []struct {
@@ -150,7 +146,7 @@ func TestGetBookByISBN(t *testing.T) {
 		},
 		{
 			name:           "non-existing book",
-			isbn:           "9780306406157", // Different valid ISBN
+			isbn:           "9780306406157",
 			expectedStatus: http.StatusNotFound,
 		},
 	}
@@ -173,7 +169,6 @@ func TestUpdateBook(t *testing.T) {
 
 	validISBN := "9783161484100"
 
-	// Add a book first
 	appCore.AddBook(nil, "Test Book", "Test Author", validISBN)
 
 	tests := []struct {
@@ -230,7 +225,6 @@ func TestDeleteBook(t *testing.T) {
 
 	validISBN := "9783161484100"
 
-	// Add a book first
 	appCore.AddBook(nil, "Test Book", "Test Author", validISBN)
 
 	tests := []struct {

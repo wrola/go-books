@@ -15,7 +15,7 @@ services:
       - DB_USER=postgres
       - DB_PASSWORD=postgres
       - DB_NAME=books
-      - DB_SSL_MODE=disable  # Within Docker network, SSL not required
+      - DB_SSL_MODE=disable
     networks:
       - books-network
     restart: unless-stopped

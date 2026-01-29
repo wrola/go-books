@@ -9,26 +9,22 @@ import (
 	"books/core/storage/repositories/interfaces"
 )
 
-// CreateBookCommand represents a command to create a new book
 type CreateBookCommand struct {
 	ISBN  string
 	Title string
 	Author string
 }
 
-// CreateBookHandler handles the creation of new books
 type CreateBookHandler struct {
 	bookRepository interfaces.BookRepository
 }
 
-// NewCreateBookHandler creates a new CreateBookHandler
 func NewCreateBookHandler(bookRepository interfaces.BookRepository) *CreateBookHandler {
 	return &CreateBookHandler{
 		bookRepository: bookRepository,
 	}
 }
 
-// Handle processes the CreateBookCommand
 func (h *CreateBookHandler) Handle(ctx context.Context, command interface{}) error {
 	cmd, ok := command.(*CreateBookCommand)
 	if !ok {

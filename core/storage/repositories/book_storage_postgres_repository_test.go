@@ -22,7 +22,6 @@ var db *sql.DB
 var repo *BookStoragePostgresRepository
 
 func TestMain(m *testing.M) {
-	// Uses a sensible default on windows (tcp/http) and linux/osx (socket)
 	pool, err := dockertest.NewPool("")
 	if err != nil {
 		log.Printf("Could not construct pool: %s - skipping integration tests", err)
@@ -35,7 +34,6 @@ func TestMain(m *testing.M) {
 		os.Exit(0)
 	}
 
-	// Pull postgres image and create container
 	resource, err := pool.RunWithOptions(&dockertest.RunOptions{
 		Repository: "postgres",
 		Tag:        "15-alpine",
@@ -58,9 +56,8 @@ func TestMain(m *testing.M) {
 
 	log.Printf("Connecting to database on url: %s", databaseUrl)
 
-	resource.Expire(120) // Tell docker to hard kill the container in 120 seconds
+	resource.Expire(120)
 
-	// Exponential backoff-retry, because the application in the container might not be ready to accept connections yet
 	pool.MaxWait = 120 * time.Second
 	if err = pool.Retry(func() error {
 		db, err = sql.Open("postgres", databaseUrl)
@@ -72,7 +69,6 @@ func TestMain(m *testing.M) {
 		log.Fatalf("Could not connect to docker: %s", err)
 	}
 
-	// Run migrations
 	_, err = db.Exec(`
 		CREATE TABLE IF NOT EXISTS books (
 			isbn VARCHAR(13) PRIMARY KEY,
@@ -85,13 +81,10 @@ func TestMain(m *testing.M) {
 		log.Fatalf("Could not run migrations: %s", err)
 	}
 
-	// Create repository
 	repo = NewBookStoragePostgresRepository(db)
 
-	// Run tests
 	code := m.Run()
 
-	// Cleanup
 	if err := pool.Purge(resource); err != nil {
 		log.Fatalf("Could not purge resource: %s", err)
 	}
@@ -117,7 +110,6 @@ func TestSave(t *testing.T) {
 		t.Fatalf("Failed to save book: %v", err)
 	}
 
-	// Verify it was saved
 	savedBook, err := repo.FindByISBN(context.Background(), validISBN)
 	if err != nil {
 		t.Fatalf("Failed to find saved book: %v", err)
@@ -137,13 +129,11 @@ func TestSaveUpsert(t *testing.T) {
 	validISBN := "9783161484100"
 	book, _ := models.NewBook(validISBN, "Original Title", "Original Author", time.Now())
 
-	// Save initial
 	err := repo.Save(context.Background(), book)
 	if err != nil {
 		t.Fatalf("Failed to save book: %v", err)
 	}
 
-	// Update via upsert
 	book.Title = "Updated Title"
 	book.Author = "Updated Author"
 	err = repo.Save(context.Background(), book)
@@ -151,7 +141,6 @@ func TestSaveUpsert(t *testing.T) {
 		t.Fatalf("Failed to upsert book: %v", err)
 	}
 
-	// Verify update
 	savedBook, _ := repo.FindByISBN(context.Background(), validISBN)
 	if savedBook.Title != "Updated Title" {
 		t.Errorf("expected title 'Updated Title', got %s", savedBook.Title)
@@ -164,7 +153,6 @@ func TestSaveUpsert(t *testing.T) {
 func TestFindAll(t *testing.T) {
 	cleanupDB(t)
 
-	// Add multiple books
 	isbns := []string{"9783161484100", "9780306406157", "9780596517748"}
 	for i, isbn := range isbns {
 		book, _ := models.NewBook(isbn, fmt.Sprintf("Book %d", i+1), fmt.Sprintf("Author %d", i+1), time.Now())
@@ -188,7 +176,6 @@ func TestFindByISBN(t *testing.T) {
 	book, _ := models.NewBook(validISBN, "Test Book", "Test Author", time.Now())
 	repo.Save(context.Background(), book)
 
-	// Test found
 	foundBook, err := repo.FindByISBN(context.Background(), validISBN)
 	if err != nil {
 		t.Fatalf("Failed to find book: %v", err)
@@ -197,7 +184,6 @@ func TestFindByISBN(t *testing.T) {
 		t.Errorf("expected ISBN %s, got %s", validISBN, foundBook.ISBN)
 	}
 
-	// Test not found
 	_, err = repo.FindByISBN(context.Background(), "9780306406157")
 	if err != interfaces.ErrBookNotFound {
 		t.Errorf("expected ErrBookNotFound, got %v", err)
@@ -211,13 +197,11 @@ func TestDelete(t *testing.T) {
 	book, _ := models.NewBook(validISBN, "Test Book", "Test Author", time.Now())
 	repo.Save(context.Background(), book)
 
-	// Delete
 	err := repo.Delete(context.Background(), validISBN)
 	if err != nil {
 		t.Fatalf("Failed to delete book: %v", err)
 	}
 
-	// Verify deleted
 	_, err = repo.FindByISBN(context.Background(), validISBN)
 	if err != interfaces.ErrBookNotFound {
 		t.Errorf("expected ErrBookNotFound after delete, got %v", err)
