@@ -69,20 +69,20 @@ func RunMigrations(db *sql.DB) error {
 				return fmt.Errorf("failed to begin transaction for migration %d: %w", migration.ID, err)
 			}
 
-			_, err = tx.Exec(migration.SQL)
-			if err != nil {
-				tx.Rollback()
-				return fmt.Errorf("failed to execute migration %d: %w", migration.ID, err)
-			}
+		_, err = tx.Exec(migration.SQL)
+		if err != nil {
+			_ = tx.Rollback()
+			return fmt.Errorf("failed to execute migration %d: %w", migration.ID, err)
+		}
 
-			_, err = tx.Exec(
-				"INSERT INTO migrations (id, name, description, applied_at) VALUES ($1, $2, $3, $4)",
-				migration.ID, migration.Name, migration.Description, time.Now(),
-			)
-			if err != nil {
-				tx.Rollback()
-				return fmt.Errorf("failed to record migration %d: %w", migration.ID, err)
-			}
+		_, err = tx.Exec(
+			"INSERT INTO migrations (id, name, description, applied_at) VALUES ($1, $2, $3, $4)",
+			migration.ID, migration.Name, migration.Description, time.Now(),
+		)
+		if err != nil {
+			_ = tx.Rollback()
+			return fmt.Errorf("failed to record migration %d: %w", migration.ID, err)
+		}
 
 			if err := tx.Commit(); err != nil {
 				return fmt.Errorf("failed to commit transaction for migration %d: %w", migration.ID, err)

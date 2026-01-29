@@ -50,7 +50,7 @@ func getTestCases() []testCase {
 			name: "duplicate ISBN",
 			setupRepo: func(repo *repositories.BookStorageInMemoryRepository) {
 				book, _ := models.NewBook(validISBN, "Existing Book", "Existing Author", time.Now())
-				repo.Save(context.Background(), book)
+				_ = repo.Save(context.Background(), book)
 			},
 			command: &AddBookCommand{
 				ISBN:   validISBN,

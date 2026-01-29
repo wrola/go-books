@@ -56,7 +56,7 @@ func TestMain(m *testing.M) {
 
 	log.Printf("Connecting to database on url: %s", databaseUrl)
 
-	resource.Expire(120)
+	_ = resource.Expire(120)
 
 	pool.MaxWait = 120 * time.Second
 	if err = pool.Retry(func() error {
@@ -156,7 +156,7 @@ func TestFindAll(t *testing.T) {
 	isbns := []string{"9783161484100", "9780306406157", "9780596517748"}
 	for i, isbn := range isbns {
 		book, _ := models.NewBook(isbn, fmt.Sprintf("Book %d", i+1), fmt.Sprintf("Author %d", i+1), time.Now())
-		repo.Save(context.Background(), book)
+		_ = repo.Save(context.Background(), book)
 	}
 
 	books, err := repo.FindAll(context.Background())
@@ -174,7 +174,7 @@ func TestFindByISBN(t *testing.T) {
 
 	validISBN := "9783161484100"
 	book, _ := models.NewBook(validISBN, "Test Book", "Test Author", time.Now())
-	repo.Save(context.Background(), book)
+	_ = repo.Save(context.Background(), book)
 
 	foundBook, err := repo.FindByISBN(context.Background(), validISBN)
 	if err != nil {
@@ -195,7 +195,7 @@ func TestDelete(t *testing.T) {
 
 	validISBN := "9783161484100"
 	book, _ := models.NewBook(validISBN, "Test Book", "Test Author", time.Now())
-	repo.Save(context.Background(), book)
+	_ = repo.Save(context.Background(), book)
 
 	err := repo.Delete(context.Background(), validISBN)
 	if err != nil {

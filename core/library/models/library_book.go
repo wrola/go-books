@@ -45,6 +45,6 @@ func (lb *LibraryBook) DaysUntilDue() int {
 		return 0
 	}
 
-	duration := lb.DueDate.Sub(time.Now())
+	duration := time.Until(*lb.DueDate)
 	return int(duration.Hours() / 24)
 }

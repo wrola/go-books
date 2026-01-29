@@ -32,7 +32,7 @@ func getUpdateBookTestCases() []updateBookTestCase {
 		{
 			name: "Update all fields",
 			setupRepo: func(repo *repositories.BookStorageInMemoryRepository) {
-				repo.Save(context.Background(), testBook)
+				_ = repo.Save(context.Background(), testBook)
 			},
 			command: &UpdateBookCommand{
 				ISBN:   testBook.ISBN,
@@ -56,7 +56,7 @@ func getUpdateBookTestCases() []updateBookTestCase {
 		{
 			name: "Partial update - title only",
 			setupRepo: func(repo *repositories.BookStorageInMemoryRepository) {
-				repo.Save(context.Background(), testBook)
+				_ = repo.Save(context.Background(), testBook)
 			},
 			command: &UpdateBookCommand{
 				ISBN:  testBook.ISBN,
@@ -99,7 +99,7 @@ func getUpdateBookTestCases() []updateBookTestCase {
 		{
 			name: "All empty fields - nothing to update",
 			setupRepo: func(repo *repositories.BookStorageInMemoryRepository) {
-				repo.Save(context.Background(), testBook)
+				_ = repo.Save(context.Background(), testBook)
 			},
 			command: &UpdateBookCommand{
 				ISBN: testBook.ISBN,

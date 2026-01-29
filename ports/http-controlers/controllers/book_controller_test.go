@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -103,7 +104,7 @@ func TestAddBook(t *testing.T) {
 func TestGetAllBooks(t *testing.T) {
 	router, appCore := setupTestRouter()
 
-	appCore.AddBook(nil, "Test Book", "Test Author", "9783161484100")
+	_, _ = appCore.AddBook(context.TODO(), "Test Book", "Test Author", "9783161484100")
 
 	req, _ := http.NewRequest(http.MethodGet, "/books", nil)
 	w := httptest.NewRecorder()
@@ -114,7 +115,7 @@ func TestGetAllBooks(t *testing.T) {
 	}
 
 	var response map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &response)
+	_ = json.Unmarshal(w.Body.Bytes(), &response)
 
 	books, ok := response["books"].([]interface{})
 	if !ok {
@@ -132,7 +133,7 @@ func TestGetBookByISBN(t *testing.T) {
 
 	validISBN := "9783161484100"
 
-	appCore.AddBook(nil, "Test Book", "Test Author", validISBN)
+	_, _ = appCore.AddBook(context.TODO(), "Test Book", "Test Author", validISBN)
 
 	tests := []struct {
 		name           string
@@ -169,7 +170,7 @@ func TestUpdateBook(t *testing.T) {
 
 	validISBN := "9783161484100"
 
-	appCore.AddBook(nil, "Test Book", "Test Author", validISBN)
+	_, _ = appCore.AddBook(context.TODO(), "Test Book", "Test Author", validISBN)
 
 	tests := []struct {
 		name           string
@@ -225,7 +226,7 @@ func TestDeleteBook(t *testing.T) {
 
 	validISBN := "9783161484100"
 
-	appCore.AddBook(nil, "Test Book", "Test Author", validISBN)
+	_, _ = appCore.AddBook(context.TODO(), "Test Book", "Test Author", validISBN)
 
 	tests := []struct {
 		name           string
@@ -269,7 +270,7 @@ func TestHealthCheck(t *testing.T) {
 	}
 
 	var response map[string]interface{}
-	json.Unmarshal(w.Body.Bytes(), &response)
+	_ = json.Unmarshal(w.Body.Bytes(), &response)
 
 	if response["status"] != "ok" {
 		t.Errorf("expected status 'ok', got '%v'", response["status"])

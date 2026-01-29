@@ -31,7 +31,7 @@ func getDeleteBookTestCases() []deleteBookTestCase {
 		{
 			name: "successful deletion",
 			setupRepo: func(repo *repositories.BookStorageInMemoryRepository) {
-				repo.Save(context.Background(), testBook)
+				_ = repo.Save(context.Background(), testBook)
 			},
 			command: &DeleteBookCommand{
 				ISBN: testBook.ISBN,

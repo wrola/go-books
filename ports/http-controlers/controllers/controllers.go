@@ -69,7 +69,7 @@ func (c *Controllers) RegisterRoutes(router *gin.Engine) {
 func (c *Controllers) healthCheck(ctx *gin.Context) {
 	status := "ok"
 	statusCode := http.StatusOK
-	dbStatus := "unknown"
+	var dbStatus string
 
 	if c.db != nil {
 		if err := c.db.Ping(); err != nil {

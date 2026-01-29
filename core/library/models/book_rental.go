@@ -45,7 +45,7 @@ func (b *BookRental) DaysUntilDue() int {
 		return 0
 	}
 
-	duration := b.ReturnDeadline.Sub(time.Now())
+	duration := time.Until(b.ReturnDeadline)
 	return int(duration.Hours() / 24)
 }
 
