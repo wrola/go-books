@@ -3,6 +3,7 @@ package commands
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -45,6 +46,14 @@ func (h *AddBookCommandHandler) Handle(ctx context.Context, cmd interface{}) err
 
 	if strings.TrimSpace(command.ISBN) == "" {
 		return errors.New("ISBN cannot be empty")
+	}
+
+	existingBook, err := h.repo.FindByISBN(ctx, command.ISBN)
+	if err == nil && existingBook != nil {
+		return fmt.Errorf("failed to save book: book with ISBN %s already exists", command.ISBN)
+	}
+	if err != nil && !errors.Is(err, interfaces.ErrBookNotFound) {
+		return err
 	}
 
 	book, err := models.NewBook(command.ISBN, command.Title, command.Author, time.Now())

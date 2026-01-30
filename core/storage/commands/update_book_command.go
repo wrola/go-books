@@ -62,9 +62,5 @@ func (h *UpdateBookCommandHandler) Handle(ctx context.Context, cmd interface{}) 
 		newBook.Author = command.Author
 	}
 
-	if err := h.repo.Delete(ctx, command.ISBN); err != nil {
-		return err
-	}
-
 	return h.repo.Save(ctx, newBook)
 }

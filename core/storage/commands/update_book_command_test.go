@@ -114,6 +114,28 @@ func getUpdateBookTestCases() []updateBookTestCase {
 			wantErr:   true,
 			expectedErr: ErrInvalidCommandType,
 		},
+		{
+			name: "Idempotent - calling update twice produces same result",
+			setupRepo: func(repo *repositories.BookStorageInMemoryRepository) {
+				_ = repo.Save(context.Background(), testBook)
+			},
+			command: &UpdateBookCommand{ISBN: testBook.ISBN, Title: "New Title"},
+			wantErr: false,
+			validateResult: func(t *testing.T, repo *repositories.BookStorageInMemoryRepository) {
+				handler := NewUpdateBookCommandHandler(repo)
+				err := handler.Handle(context.Background(), &UpdateBookCommand{
+					ISBN:  testBook.ISBN,
+					Title: "New Title",
+				})
+				if err != nil {
+					t.Errorf("second call should succeed: %v", err)
+				}
+				book, _ := repo.FindByISBN(context.Background(), testBook.ISBN)
+				if book.Title != "New Title" {
+					t.Errorf("expected 'New Title', got '%s'", book.Title)
+				}
+			},
+		},
 	}
 }
 

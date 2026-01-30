@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"context"
-	"fmt"
 	"sync"
 
 	"books/core/storage/models"
@@ -20,13 +19,14 @@ func NewBookStorageInMemoryRepository() *BookStorageInMemoryRepository {
 	}
 }
 
-	func (r *BookStorageInMemoryRepository) Save(ctx context.Context, book *models.Book) error {
+func (r *BookStorageInMemoryRepository) Save(ctx context.Context, book *models.Book) error {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
 
-	for _, existingBook := range r.books {
+	for i, existingBook := range r.books {
 		if existingBook.ISBN == book.ISBN {
-			return fmt.Errorf("failed to save book: book with ISBN %s already exists", book.ISBN)
+			r.books[i] = book
+			return nil
 		}
 	}
 
