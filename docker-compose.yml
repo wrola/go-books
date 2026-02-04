@@ -1,3 +1,6 @@
+# SECURITY: Use strong passwords in production
+# Set credentials via environment variables or .env file:
+#   POSTGRES_USER, POSTGRES_PASSWORD, DB_USER, DB_PASSWORD
 version: "3.8"
 
 services:
@@ -12,10 +15,12 @@ services:
         condition: service_healthy
     environment:
       - DB_HOST=postgres
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
-      - DB_NAME=books
-      - DB_SSL_MODE=disable
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - DB_NAME=${DB_NAME:-books}
+      - DB_SSL_MODE=${DB_SSL_MODE:-disable}
+      - API_KEY=${API_KEY:-}
+      - AUTH_DISABLED=${AUTH_DISABLED:-false}
     networks:
       - books-network
     restart: unless-stopped
@@ -31,16 +36,16 @@ services:
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=books
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-books}
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
       - books-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
       interval: 10s
       timeout: 5s
       retries: 5

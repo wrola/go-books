@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"errors"
+	"log"
 	"net/http"
 
 	"books/core"
@@ -10,41 +11,38 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// BookController handles HTTP requests related to books
 type BookController struct {
 	core *core.Core
 }
 
-// NewBookController creates a new book controller
 func NewBookController(core *core.Core) *BookController {
 	return &BookController{core: core}
 }
 
-// AddBookRequest represents the request body for adding a book
 type AddBookRequest struct {
-	Title  string `json:"title" binding:"required"`
-	Author string `json:"author" binding:"required"`
-	ISBN   string `json:"isbn" binding:"required"`
+	Title  string `json:"title" binding:"required,max=255"`
+	Author string `json:"author" binding:"required,max=255"`
+	ISBN   string `json:"isbn" binding:"required,max=20"`
 }
 
 type UpdateBookRequest struct {
-	Title  string `json:"title"`
-	Author string `json:"author"`
+	Title  string `json:"title" binding:"max=255"`
+	Author string `json:"author" binding:"max=255"`
 }
 
-// AddBook handles the request to add a new book
 func (c *BookController) AddBook(ctx *gin.Context) {
 	var request AddBookRequest
 
 	if err := ctx.ShouldBindJSON(&request); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid request format"})
 		return
 	}
 
 	book, err := c.core.AddBook(ctx, request.Title, request.Author, request.ISBN)
 	if err != nil {
 		status := mapErrorToStatus(err)
-		ctx.JSON(status, gin.H{"error": err.Error()})
+		ctx.JSON(status, gin.H{"error": sanitizeError(err, status)})
+		log.Printf("AddBook error: %v", err)
 		return
 	}
 
@@ -58,7 +56,6 @@ func (c *BookController) AddBook(ctx *gin.Context) {
 	})
 }
 
-// GetBookByISBN handles the request to get a book by ISBN
 func (c *BookController) GetBookByISBN(ctx *gin.Context) {
 	isbn := ctx.Param("isbn")
 
@@ -82,7 +79,6 @@ func (c *BookController) GetBookByISBN(ctx *gin.Context) {
 	})
 }
 
-// GetBook handles the request to get a book by ID
 func (c *BookController) GetBook(ctx *gin.Context) {
 	isbn := ctx.Param("isbn")
 
@@ -106,12 +102,12 @@ func (c *BookController) GetBook(ctx *gin.Context) {
 	})
 }
 
-// GetAllBooks handles the request to get all books
 func (c *BookController) GetAllBooks(ctx *gin.Context) {
 	books, err := c.core.GetAllBooks(ctx)
 	if err != nil {
 		status := mapErrorToStatus(err)
-		ctx.JSON(status, gin.H{"error": err.Error()})
+		ctx.JSON(status, gin.H{"error": sanitizeError(err, status)})
+		log.Printf("GetAllBooks error: %v", err)
 		return
 	}
 
@@ -129,7 +125,6 @@ func (c *BookController) GetAllBooks(ctx *gin.Context) {
 	})
 }
 
-// UpdateBook handles the request to update a book
 func (c *BookController) UpdateBook(ctx *gin.Context) {
 	isbn := ctx.Param("isbn")
 
@@ -141,7 +136,7 @@ func (c *BookController) UpdateBook(ctx *gin.Context) {
 	var request UpdateBookRequest
 
 	if err := ctx.ShouldBindJSON(&request); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "invalid request format"})
 		return
 	}
 
@@ -149,7 +144,8 @@ func (c *BookController) UpdateBook(ctx *gin.Context) {
 
 	if err != nil {
 		status := mapErrorToStatus(err)
-		ctx.JSON(status, gin.H{"error": err.Error()})
+		ctx.JSON(status, gin.H{"error": sanitizeError(err, status)})
+		log.Printf("UpdateBook error for ISBN %s: %v", isbn, err)
 		return
 	}
 
@@ -163,7 +159,6 @@ func (c *BookController) UpdateBook(ctx *gin.Context) {
 	})
 }
 
-// DeleteBook handles the request to delete a book
 func (c *BookController) DeleteBook(ctx *gin.Context) {
 	isbn := ctx.Param("isbn")
 
@@ -176,19 +171,18 @@ func (c *BookController) DeleteBook(ctx *gin.Context) {
 
 	if err != nil {
 		status := mapErrorToStatus(err)
-		ctx.JSON(status, gin.H{"error": err.Error()})
+		ctx.JSON(status, gin.H{"error": sanitizeError(err, status)})
+		log.Printf("DeleteBook error for ISBN %s: %v", isbn, err)
 		return
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{"message": "Book deleted successfully"})
 }
 
-// mapErrorToStatus maps domain errors to HTTP status codes
 func mapErrorToStatus(err error) int {
 	if errors.Is(err, interfaces.ErrBookNotFound) {
 		return http.StatusNotFound
 	}
-	// Check for validation errors (contains common validation error messages)
 	errMsg := err.Error()
 	if contains(errMsg, "cannot be empty", "invalid", "required", "already exists", "ISBN must be", "checksum") {
 		return http.StatusBadRequest
@@ -196,7 +190,6 @@ func mapErrorToStatus(err error) int {
 	return http.StatusInternalServerError
 }
 
-// contains checks if the string contains any of the substrings
 func contains(s string, substrs ...string) bool {
 	for _, substr := range substrs {
 		if len(s) >= len(substr) {
@@ -208,5 +201,16 @@ func contains(s string, substrs ...string) bool {
 		}
 	}
 	return false
+}
+
+func sanitizeError(err error, status int) string {
+	switch status {
+	case http.StatusNotFound:
+		return "resource not found"
+	case http.StatusBadRequest:
+		return "invalid request"
+	default:
+		return "internal server error"
+	}
 }
 

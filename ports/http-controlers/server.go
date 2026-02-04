@@ -35,6 +35,7 @@ func NewServerWithDB(core *core.Core, db *sql.DB) *Server {
 
 	// Apply middleware in order
 	router.Use(middleware.RequestIDMiddleware())
+	router.Use(middleware.SecurityHeadersMiddleware())
 	router.Use(middleware.CORSMiddleware())
 	router.Use(middleware.RateLimitMiddleware())
 	router.Use(middleware.SkipAuthPaths("/health"))

@@ -8,9 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// CORSMiddleware returns a Gin middleware for CORS configuration
 func CORSMiddleware() gin.HandlerFunc {
-	// Get allowed origins from environment, default to none (strict)
 	allowedOriginsStr := os.Getenv("CORS_ALLOWED_ORIGINS")
 	var allowedOrigins []string
 	if allowedOriginsStr != "" {
@@ -20,36 +18,35 @@ func CORSMiddleware() gin.HandlerFunc {
 		}
 	}
 
-	// Get allowed methods from environment, default to common methods
 	allowedMethodsStr := os.Getenv("CORS_ALLOWED_METHODS")
 	allowedMethods := "GET, POST, PUT, DELETE, OPTIONS"
 	if allowedMethodsStr != "" {
 		allowedMethods = allowedMethodsStr
 	}
 
-	// Get allowed headers from environment
 	allowedHeadersStr := os.Getenv("CORS_ALLOWED_HEADERS")
 	allowedHeaders := "Content-Type, Authorization, X-API-Key, X-Request-ID"
 	if allowedHeadersStr != "" {
 		allowedHeaders = allowedHeadersStr
 	}
 
-	// Get exposed headers from environment
 	exposedHeadersStr := os.Getenv("CORS_EXPOSED_HEADERS")
 	exposedHeaders := "X-Request-ID"
 	if exposedHeadersStr != "" {
 		exposedHeaders = exposedHeadersStr
 	}
 
-	// Check if credentials are allowed
 	allowCredentials := os.Getenv("CORS_ALLOW_CREDENTIALS") == "true"
 
 	return func(c *gin.Context) {
 		origin := c.Request.Header.Get("Origin")
 
-		// Check if origin is allowed
 		originAllowed := false
+		hasWildcard := false
 		for _, allowed := range allowedOrigins {
+			if allowed == "*" {
+				hasWildcard = true
+			}
 			if allowed == "*" || allowed == origin {
 				originAllowed = true
 				break
@@ -57,7 +54,15 @@ func CORSMiddleware() gin.HandlerFunc {
 		}
 
 		if originAllowed {
-			c.Header("Access-Control-Allow-Origin", origin)
+			if hasWildcard && allowCredentials {
+				if origin != "" {
+					c.Header("Access-Control-Allow-Origin", origin)
+				}
+			} else if hasWildcard {
+				c.Header("Access-Control-Allow-Origin", "*")
+			} else {
+				c.Header("Access-Control-Allow-Origin", origin)
+			}
 			c.Header("Access-Control-Allow-Methods", allowedMethods)
 			c.Header("Access-Control-Allow-Headers", allowedHeaders)
 			c.Header("Access-Control-Expose-Headers", exposedHeaders)
