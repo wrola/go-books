@@ -84,7 +84,7 @@ jobs:
         run: go build -o go-books .
 
       - name: Upload binary artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: go-books-binary
           path: go-books
