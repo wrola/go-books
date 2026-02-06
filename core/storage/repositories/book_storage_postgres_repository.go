@@ -48,7 +48,7 @@ func (r *BookStoragePostgresRepository) FindAll(ctx context.Context) ([]*models.
 	if err != nil {
 		return nil, fmt.Errorf("failed to query books: %w", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var books []*models.Book
 	for rows.Next() {
