@@ -50,7 +50,7 @@ func RunMigrations(db *sql.DB) error {
 	if err != nil {
 		return fmt.Errorf("failed to query applied migrations: %w", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	for rows.Next() {
 		var id int
