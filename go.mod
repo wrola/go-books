@@ -4,7 +4,7 @@ go 1.24.1
 
 require (
 	github.com/gin-gonic/gin v1.11.0
-	github.com/lib/pq v1.10.9
+	github.com/lib/pq v1.11.1
 	github.com/ory/dockertest/v3 v3.12.0
 )
 
